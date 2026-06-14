@@ -4,55 +4,92 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>おばけ面談室 Prototype</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main id="app" class="app-shell">
+  <main class="app-shell" aria-label="おばけ面談室">
     <header class="topbar">
       <div class="stat-card">
         <span class="stat-label">成仏</span>
         <strong id="score">0</strong>
       </div>
       <div class="timer-card" id="timerCard">
-        <span class="stat-label" id="timerLabel">履歴書</span>
-        <strong><span id="timer">5.0</span><small>秒</small></strong>
+        <span class="stat-label" id="timerLabel">待機</span>
+        <strong><span id="timer">--</span><small>秒</small></strong>
       </div>
-      <button id="pauseBtn" class="ghost-button small">Ⅱ</button>
+      <button class="ghost-button small" id="pauseBtn" type="button" aria-label="ポーズ">Ⅱ</button>
     </header>
 
-    <section id="resumeScreen" class="screen resume-screen active">
-      <div class="resume-paper">
-        <div class="resume-stamp">霊界面談 履歴書</div>
-        <h1 id="resumeName">---</h1>
-        <dl class="resume-grid">
-          <div><dt>性別</dt><dd id="resumeGender">---</dd></div>
-          <div><dt>享年</dt><dd id="resumeAge">---</dd></div>
-          <div><dt>性格タグ</dt><dd id="resumeType">---</dd></div>
-          <div><dt>死因</dt><dd id="resumeCause">---</dd></div>
-          <div class="wide"><dt>未練</dt><dd id="resumeRegret">---</dd></div>
-          <div class="wide"><dt>面談メモ</dt><dd id="resumeMemo">---</dd></div>
-        </dl>
-        <div class="resume-footer">
-          <span>5秒後に入室します</span>
-          <button id="skipResumeBtn" class="ghost-button">すぐ面談</button>
+    <section class="screen title-screen active" id="titleScreen">
+      <div class="title-card">
+        <p class="title-kicker">GHOST INTERVIEW</p>
+        <h1>おばけ面談室</h1>
+        <p class="title-copy">履歴書を読み、相談に来るおばけへ30秒以内に回答。気持ちよく成仏させ続けよう。</p>
+        <div class="title-rules">
+          <span>履歴書 10秒</span>
+          <span>回答 30秒</span>
+          <span>地雷で終了</span>
         </div>
+        <button class="ghost-button primary" id="startBtn" type="button">面談を始める</button>
+        <p class="title-note">正解は長さでバレないよう、全回答を短めに調整済み。</p>
       </div>
     </section>
 
-    <section id="gameScreen" class="screen game-screen">
+    <section class="screen resume-screen" id="resumeScreen">
+      <article class="resume-paper">
+        <div class="resume-stamp">履歴書</div>
+        <h1 id="resumeName">---</h1>
+        <dl class="resume-grid">
+          <div>
+            <dt>性別</dt>
+            <dd id="resumeGender">---</dd>
+          </div>
+          <div>
+            <dt>享年</dt>
+            <dd id="resumeAge">---</dd>
+          </div>
+          <div class="wide">
+            <dt>性格タグ</dt>
+            <dd id="resumeType">---</dd>
+          </div>
+          <div class="wide">
+            <dt>死因</dt>
+            <dd id="resumeCause">---</dd>
+          </div>
+          <div>
+            <dt>未練</dt>
+            <dd id="resumeRegret">---</dd>
+          </div>
+          <div>
+            <dt>面談番号</dt>
+            <dd>無限受付</dd>
+          </div>
+          <div class="wide">
+            <dt>備考</dt>
+            <dd id="resumeMemo">---</dd>
+          </div>
+        </dl>
+        <footer class="resume-footer">
+          <span>10秒後に入室します</span>
+          <button class="ghost-button" id="skipResumeBtn" type="button">入室</button>
+        </footer>
+      </article>
+    </section>
+
+    <section class="screen game-screen" id="gameScreen">
       <div class="interview-room">
         <div class="room-light"></div>
-        <div class="wall-board">面談中</div>
+        <div class="wall-board">面接会場</div>
         <div class="ghost-stage">
-          <div id="ghostFigure" class="ghost-figure">
+          <div class="ghost-figure" id="ghostFigure">
             <div class="ghost-aura"></div>
             <div class="ghost-body">
-              <div id="ghostFace" class="ghost-face">；_；</div>
-              <div id="ghostAccessory" class="ghost-accessory">名札</div>
+              <div class="ghost-face" id="ghostFace">；_；</div>
+              <div class="ghost-accessory" id="ghostAccessory">黒いスーツ</div>
             </div>
           </div>
-          <div class="desk"></div>
         </div>
+        <div class="desk"></div>
         <div class="speech-panel">
           <div class="speaker-row">
             <span id="speakerName">---</span>
@@ -64,40 +101,40 @@
 
       <div class="choices-panel">
         <div class="status-row">
-          <span id="moodChip">未練：---</span>
-          <span id="roundChip">面談 1</span>
+          <span id="moodChip">---</span>
+          <span id="roundChip">---</span>
         </div>
-        <div id="choices" class="choices"></div>
+        <div class="choices" id="choices"></div>
       </div>
     </section>
 
-    <section id="resultScreen" class="screen result-screen">
-      <div class="result-card">
-        <p id="resultKicker" class="result-kicker">GAME OVER</p>
-        <h2 id="resultTitle">---</h2>
+    <section class="screen result-screen" id="resultScreen">
+      <article class="result-card">
+        <p class="result-kicker" id="resultKicker">GAME OVER</p>
+        <h2 id="resultTitle">面談終了</h2>
         <p id="resultReason">---</p>
         <div class="result-score">
-          <span>連続成仏</span>
+          <span>成仏できた数</span>
           <strong id="finalScore">0</strong>
         </div>
         <div class="compatibility">
-          <h3>あなたと相性のいい16タイプ風タグ</h3>
+          <h3>相性のいい16タイプ風タグ</h3>
           <ol id="compatibilityList"></ol>
         </div>
-        <button id="restartBtn" class="ghost-button primary">もう一度</button>
-      </div>
+        <button class="ghost-button primary" id="restartBtn" type="button">もう一度</button>
+      </article>
     </section>
 
-    <div id="pauseOverlay" class="pause-overlay hidden">
+    <div class="pause-overlay hidden" id="pauseOverlay">
       <div class="pause-card">
         <h2>一時停止中</h2>
-        <p>霊界面談室、ただいま空調だけ動いています。</p>
-        <button id="resumeBtn" class="ghost-button primary">再開</button>
+        <p>おばけも面接室の外で深呼吸しています。</p>
+        <button class="ghost-button primary" id="resumeBtn" type="button">再開</button>
       </div>
     </div>
 
-    <div id="toast" class="toast hidden"></div>
+    <div class="toast hidden" id="toast"></div>
   </main>
-  <script src="./app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

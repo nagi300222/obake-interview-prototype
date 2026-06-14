@@ -48,61 +48,61 @@
   const COLORS = ['#eaf7ff','#f1ecff','#eafff0','#fff5df','#ffeef6','#e8fbff','#f5f7ff','#edf7e8'];
 
   const ASCENSION_LINES = {
-    '責任': 'あなたは逃げた人ではありません。最後まで自分の役目を果たそうとしていました。その姿勢は、ちゃんと残っています。',
-    '整理': '起きたことをひとつずつ分けると、あなたの責任ではない部分も見えてきます。抱えなくていいものまで背負わなくて大丈夫です。',
-    '共感': '本当は、ただ「つらかったね」と言ってほしかったんですね。その痛みは、ここでちゃんと受け取りました。',
-    '承認': 'あなたが誰かを思って動いた時間は、消えていません。見返りがなくても、その優しさは本物でした。',
-    '意味づけ': '終わり方だけで人生は決まりません。あなたが残した問いや願いも、誰かの中で意味になって続いていきます。',
-    '分析': 'あなたの失敗は性格の欠陥ではなく、状況と条件が重なった結果です。そこを分ければ、あなた自身を責める理由は減ります。',
-    '結論': 'ここで一区切りにしましょう。あなたが選んだこと、守ったこと、悔やんだことまで含めて、人生として閉じていいんです。',
-    '簡潔': '全部を飾らなくて大丈夫です。あなたはよくやりました。それだけで、今は十分です。',
-    '事実': '事実として、あなたはそこにいて、選び、動きました。結果が完璧でなくても、その存在はなかったことにはなりません。',
-    '肯定': 'あなたが大切にしたものは、誰かに笑われるものではありません。好きだった気持ちは、そのままでいいんです。',
-    '余白': '答えをひとつに決めなくても大丈夫です。あなたの心には、まだ名前のないまま残していい場所があります。',
-    '本心': '本当は、正しさよりも「わかってほしい」が先にあったんですね。その気持ちは、ここでちゃんと見つけました。',
-    '可能性': '叶わなかった未来も、無意味ではありません。そこへ向かおうとしたあなたの選択が、もうひとつの証拠です。',
-    '勢い': '最後まで動いたんですね。後悔はあっても、あなたの中の火はちゃんと燃えていました。',
-    '現実': '過去は変えられません。でも、あなたがその現実の中で踏ん張ったことは、確かにここに残っています。',
-    '明るさ': '泣いて終わらせなくてもいいんです。あなたが笑わせた人、笑った時間、その全部を連れて行っていいんです。',
-    '希望': '夢は途中で止まっても、あなたを前に進ませた力でした。その光は失敗ではありません。',
-    '挑戦': '普通に収まらなかったところまで含めて、あなたらしかった。負け方まで、ちゃんと面白かったですよ。',
-    '評価': 'あなたの判断には重さがありました。結果だけでなく、背負った責任も正当に評価されるべきです。',
-    '関係': 'あなたはひとりで終わったわけではありません。思った人がいて、思われた時間があった。それは確かな関係です。',
-    '影響': 'あなたがかけた言葉や背中を見て、変わった人がいます。あなたは誰かの道に、確かに明かりを置きました。',
-    '継承': 'あなたの意志はここで途切れません。形を変えて、誰かの選択に続いていきます。だから、もう手を離して大丈夫です。'
+    '責任': 'あなたは役目から逃げていません。',
+    '整理': '背負わなくていい責任もあります。',
+    '共感': 'つらさは、ここで受け取りました。',
+    '承認': 'その優しさは本物でした。',
+    '意味づけ': '終わり方だけが人生ではありません。',
+    '分析': 'あなた個人だけの失敗ではありません。',
+    '結論': 'ここで一区切りにして大丈夫です。',
+    '簡潔': 'あなたはよくやりました。',
+    '事実': 'あなたがいた事実は消えません。',
+    '肯定': '好きだった気持ちはそのままでいい。',
+    '余白': '答えを一つに決めなくて大丈夫です。',
+    '本心': '本当は、わかってほしかったんですね。',
+    '可能性': '叶わない未来にも意味はあります。',
+    '勢い': '最後まで動いた火は残っています。',
+    '現実': '現実の中で踏ん張っていました。',
+    '明るさ': '笑った時間も連れて行けます。',
+    '希望': '夢を追った時間は失敗ではありません。',
+    '挑戦': '普通じゃない所まで、あなたらしい。',
+    '評価': 'その責任は正当に見られるべきです。',
+    '関係': 'あなたは一人で終わっていません。',
+    '影響': 'あなたは誰かの道に明かりを置きました。',
+    '継承': 'その意志は形を変えて続きます。'
   };
 
   const NEUTRAL_LINES = [
-    'まずは、何が一番引っかかっているのか一緒に分けてみましょう。',
-    '無理に結論を出さず、今言えるところから聞かせてください。',
-    'その話には、まだ隠れている気持ちがありそうです。もう少しだけ教えてください。',
-    'すぐに決めつけたくありません。あなたの言葉で続きを聞かせてください。',
-    'ここでは急がなくて大丈夫です。ひとつずつ見ていきましょう。',
-    'あなたがそこまで気にしている理由を、もう少し一緒に探しましょう。',
-    'その未練は軽いものではなさそうです。丁寧に扱わせてください。',
-    '今の言葉だけでは、まだ核心に届いていない気がします。'
+    'まず、引っかかりを分けましょう。',
+    '結論を急がず聞かせてください。',
+    'その奥に別の気持ちがありそうです。',
+    '決めつけず、続きを聞きます。',
+    'ひとつずつ見ていきましょう。',
+    'なぜ気になるのか探しましょう。',
+    'その未練は丁寧に扱います。',
+    'まだ核心に届いていない気がします。'
   ];
 
   const DISTRUST_LINES = [
-    'その話、たぶん考えすぎですよ。',
-    'まあ、誰にでもあることじゃないですか。',
-    '早く切り替えた方がいいと思います。',
-    '結局、あなたが決められなかっただけでは？',
-    'そこまで深刻にする必要あります？',
-    'もっと前向きに考えれば済む話です。',
-    '今さら気にしても仕方ないですよ。',
-    'それは相手も困っていたと思います。'
+    '考えすぎかもしれません。',
+    '誰にでもあることです。',
+    '切り替えた方がいいです。',
+    '決められなかっただけでは？',
+    'そこまで深刻ですか？',
+    '前向きに考えましょう。',
+    '今さら気にしても仕方ありません。',
+    '相手も困っていたと思います。'
   ];
 
   const TRAP_LINES = [
-    'あなたの未練は、正直かなり迷惑です。',
-    '結局、自業自得だったんじゃないですか。',
-    '残された人の方が大変なので、あなたは黙って消えましょう。',
-    'そんな人生なら、意味を探しても無駄です。',
-    '失敗したまま終わった。それが全部です。',
-    '誰も覚えていないなら、何も残っていません。',
-    'あなたが悪いと認めれば終わります。',
-    'その程度で成仏できないのは甘えです。'
+    'その未練は迷惑です。',
+    '自業自得では？',
+    '黙って消えましょう。',
+    '意味を探しても無駄です。',
+    '失敗で終わっただけです。',
+    '誰も覚えていません。',
+    'あなたが悪いです。',
+    '成仏できないのは甘えです。'
   ];
 
   const FOLLOWUP_LINES = [
@@ -199,6 +199,8 @@
   }
 
   const els = {
+    titleScreen: document.getElementById('titleScreen'),
+    startBtn: document.getElementById('startBtn'),
     score: document.getElementById('score'),
     timer: document.getElementById('timer'),
     timerLabel: document.getElementById('timerLabel'),
@@ -238,13 +240,13 @@
   let ghosts = [];
   let currentGhost = null;
   let currentIndex = 0;
-  let state = 'resume';
+  let state = 'title';
   let score = 0;
   let stage = 0;
   let trust = 0;
   let suspicion = 0;
-  let resumeTime = 5;
-  let answerTime = 10;
+  let resumeTime = 10;
+  let answerTime = 30;
   let paused = false;
   let tickHandle = null;
   let ascendedTypes = {};
@@ -252,16 +254,23 @@
   let lastChoiceSet = [];
 
   function setScreen(name) {
+    els.titleScreen.classList.toggle('active', name === 'title');
     els.resumeScreen.classList.toggle('active', name === 'resume');
     els.gameScreen.classList.toggle('active', name === 'game');
     els.resultScreen.classList.toggle('active', name === 'result');
   }
 
   function updateTimerDisplay() {
+    if (state === 'title') {
+      els.timer.textContent = '--';
+      els.timerLabel.textContent = '待機';
+      els.timerCard.classList.remove('danger');
+      return;
+    }
     const value = state === 'resume' ? resumeTime : answerTime;
     els.timer.textContent = Math.max(0, value).toFixed(1);
     els.timerLabel.textContent = state === 'resume' ? '履歴書' : '回答';
-    els.timerCard.classList.toggle('danger', state === 'interview' && answerTime <= 3);
+    els.timerCard.classList.toggle('danger', state === 'interview' && answerTime <= 5);
   }
 
   function startGame() {
@@ -288,8 +297,8 @@
     stage = 0;
     trust = currentGhost.startTrust;
     suspicion = 0;
-    resumeTime = 5;
-    answerTime = 10;
+    resumeTime = 10;
+    answerTime = 30;
     state = 'resume';
     setScreen('resume');
     renderResume();
@@ -309,7 +318,7 @@
   function beginInterview() {
     if (state !== 'resume') return;
     state = 'interview';
-    answerTime = 10;
+    answerTime = 30;
     setScreen('game');
     renderGhostLook();
     renderInterview();
@@ -381,10 +390,7 @@
   }
 
   function makeAscensionText(ghost) {
-    const primary = ASCENSION_LINES[ghost.primaryWant] || ASCENSION_LINES[ghost.secondaryWant] || ASCENSION_LINES['共感'];
-    const secondary = ASCENSION_LINES[ghost.secondaryWant] || '';
-    if (ghost.primaryWant === ghost.secondaryWant || !secondary) return primary;
-    return `${primary} ${secondary}`;
+    return ASCENSION_LINES[ghost.primaryWant] || ASCENSION_LINES[ghost.secondaryWant] || ASCENSION_LINES['共感'];
   }
 
   function renderChoices(choices) {
@@ -392,7 +398,7 @@
     choices.forEach((choice, index) => {
       const btn = document.createElement('button');
       btn.className = 'choice-button';
-      btn.innerHTML = `<span class="choice-number">${index + 1}</span>${escapeHtml(choice.text)}`;
+      btn.innerHTML = `<span class="choice-number">${index + 1}</span><span class="choice-text">${escapeHtml(choice.text)}</span>`;
       btn.addEventListener('click', () => choose(choice));
       els.choices.appendChild(btn);
     });
@@ -413,7 +419,7 @@
       suspicion += 1;
       trust -= 1;
       stage += 1;
-      answerTime = 10;
+      answerTime = 30;
       showToast('不信が増えた。次から地雷回答が増えます。');
       renderInterview();
       updateTimerDisplay();
@@ -423,7 +429,7 @@
       stage += 1;
       trust += choice.trustDelta || 0;
       if (stage > currentGhost.patience) suspicion += 1;
-      answerTime = 10;
+      answerTime = 30;
       showToast(choice.trustDelta ? '少し信頼された。まだ続きます。' : '無難に受け止めた。まだ核心ではない。');
       renderInterview();
       updateTimerDisplay();
@@ -453,7 +459,7 @@
     } else if (state === 'interview') {
       answerTime = Math.max(0, answerTime - 0.1);
       if (answerTime <= 0) {
-        endGame('timeout', '時間切れ', `${currentGhost.name}への回答が10秒以内に出せませんでした。おばけは未練を抱えたまま面談室を出ていきました。`);
+        endGame('timeout', '時間切れ', `${currentGhost.name}への回答が30秒以内に出せませんでした。おばけは未練を抱えたまま面談室を出ていきました。`);
       }
     }
     updateTimerDisplay();
@@ -509,9 +515,10 @@
     return String(str).replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
   }
 
+  els.startBtn.addEventListener('click', startGame);
   els.skipResumeBtn.addEventListener('click', beginInterview);
   els.pauseBtn.addEventListener('click', () => {
-    if (state === 'result') return;
+    if (state === 'result' || state === 'title') return;
     paused = true;
     els.pauseOverlay.classList.remove('hidden');
   });
@@ -530,5 +537,6 @@
     }
   });
 
-  startGame();
+  setScreen('title');
+  updateTimerDisplay();
 })();
