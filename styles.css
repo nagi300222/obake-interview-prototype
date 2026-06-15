@@ -155,7 +155,7 @@ button { font: inherit; }
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
 }
 .resume-paper::before {
   content: "";
@@ -178,8 +178,8 @@ button { font: inherit; }
   position: relative;
 }
 .resume-paper h1 {
-  margin: 6px 0 14px;
-  font-size: 30px;
+  margin: 4px 0 10px;
+  font-size: 27px;
   border-bottom: 3px double rgba(0,0,0,0.22);
   padding-bottom: 10px;
   position: relative;
@@ -188,18 +188,18 @@ button { font: inherit; }
   margin: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
   position: relative;
 }
 .resume-grid div {
   border: 1px solid rgba(42,37,48,0.18);
   border-radius: 14px;
-  padding: 10px;
+  padding: 8px 9px;
   background: rgba(255,255,255,0.42);
 }
 .resume-grid .wide { grid-column: 1 / -1; }
 dt { font-size: 11px; color: #715f5f; font-weight: 800; letter-spacing: .08em; }
-dd { margin: 4px 0 0; font-weight: 800; line-height: 1.5; }
+dd { margin: 3px 0 0; font-weight: 800; line-height: 1.42; font-size: 14px; }
 .resume-footer {
   margin-top: auto;
   display: flex;
@@ -506,6 +506,12 @@ dd { margin: 4px 0 0; font-weight: 800; line-height: 1.5; }
 
 @media (max-height: 720px) {
   .app-shell { min-height: 100dvh; }
+  .resume-paper { padding: 14px; }
+  .resume-paper h1 { font-size: 24px; margin-bottom: 8px; }
+  .resume-grid { gap: 6px; }
+  .resume-grid div { padding: 7px 8px; }
+  dt { font-size: 10px; }
+  dd { font-size: 13px; line-height: 1.35; }
   .ghost-figure { transform: scale(.88); transform-origin: bottom center; }
   .choice-button { height: 56px; min-height: 56px; max-height: 56px; font-size: 14px; padding: 8px 10px; }
   .speech-panel { min-height: 78px; }
