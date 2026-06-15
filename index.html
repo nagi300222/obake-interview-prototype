@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>おばけ面談室 v8 Clean</title>
+<title>おばけ面談室 v9 Clean</title>
 <style>
 :root{
   --bg:#0d101b;
@@ -121,7 +121,7 @@ button{font:inherit;-webkit-tap-highlight-color:transparent}
   font-weight:900;
   font-size:13px;
 }
-.note{margin:13px 0 0;color:var(--muted);font-size:12px;line-height:1.55}
+.note{margin:13px 0 0;color:var(--muted);font-size:12px;line-height:1.55}.note.ok{color:var(--accent);font-weight:900}
 
 .resume{
   padding:16px 14px calc(16px + env(safe-area-inset-bottom));
@@ -516,7 +516,7 @@ dd{margin:4px 0 0;font-weight:850;line-height:1.46}
 </style>
 </head>
 <body>
-<main class="app" aria-label="おばけ面談室 v8 clean">
+<main class="app" aria-label="おばけ面談室 v9 clean">
   <header class="topbar">
     <div class="stat">
       <span class="label">成仏 / 失敗</span>
@@ -531,7 +531,7 @@ dd{margin:4px 0 0;font-weight:850;line-height:1.46}
 
   <section class="screen title active" id="titleScreen">
     <div class="title-card">
-      <p class="kicker">V8 CLEAN / SINGLE FILE</p>
+      <p class="kicker">V9 CLEAN / CLICK FALLBACK</p>
       <h1>おばけ<br>面談室</h1>
       <p class="copy">履歴書を20秒だけ確認し、面談では30秒以内に返答。<br>優しいだけでは、うまく成仏しません。</p>
       <div class="rules">
@@ -540,8 +540,8 @@ dd{margin:4px 0 0;font-weight:850;line-height:1.46}
         <span>成仏HP / 不信HP制</span>
         <span>3回成仏失敗で終了</span>
       </div>
-      <button class="btn primary" id="startBtn" type="button">面談を始める</button>
-      <p class="note">外部CSS/JSを読まない単体版。GitHub Pagesではこのindex.htmlだけで動きます。</p>
+      <button class="btn primary" id="startBtn" type="button" onclick="window.__obakeStart && window.__obakeStart()">面談を始める</button>
+      <p class="note" id="debugNote">JS未起動：この表示のままなら、ページではなくGitHubのファイル画面を開いている可能性があります。</p>
     </div>
   </section>
 
@@ -560,7 +560,7 @@ dd{margin:4px 0 0;font-weight:850;line-height:1.46}
       </dl>
       <footer class="resume-footer">
         <span>20秒後に入室します</span>
-        <button class="btn" id="skipResumeBtn" type="button">すぐ面談</button>
+        <button class="btn" id="skipResumeBtn" type="button" onclick="window.__obakeBegin && window.__obakeBegin()">すぐ面談</button>
       </footer>
     </article>
   </section>
@@ -609,7 +609,7 @@ dd{margin:4px 0 0;font-weight:850;line-height:1.46}
         <h3>相性のいい16タイプ風タグ</h3>
         <ol id="compatList"></ol>
       </div>
-      <button class="btn primary" id="restartBtn" type="button">もう一度</button>
+      <button class="btn primary" id="restartBtn" type="button" onclick="window.__obakeStart && window.__obakeStart()">もう一度</button>
     </article>
   </section>
 
@@ -633,7 +633,7 @@ dd{margin:4px 0 0;font-weight:850;line-height:1.46}
     answerSeconds: 30,
     ghostCount: 150,
     maxFails: 3,
-    version: "v8-clean-single-index"
+    version: "v9-clean-click-fallback"
   };
 
   const TYPE_PROFILES = {
@@ -1173,6 +1173,17 @@ dd{margin:4px 0 0;font-weight:850;line-height:1.46}
     clearTimeout(showToast._t);
     showToast._t = setTimeout(() => els.toast.classList.add("hidden"), 1200);
   }
+
+  window.__obakeStart = startGame;
+  window.__obakeBegin = beginInterview;
+  const debugNote = document.getElementById("debugNote");
+  if(debugNote){
+    debugNote.textContent = "JS起動済み。ボタンが反応しない時は、タイトル画面の中央をタップしてください。";
+    debugNote.classList.add("ok");
+  }
+  els.title.addEventListener("click", (e) => {
+    if(state.phase === "title" && !e.target.closest("button")) startGame();
+  });
 
   els.start.addEventListener("click", startGame);
   els.restart.addEventListener("click", startGame);
