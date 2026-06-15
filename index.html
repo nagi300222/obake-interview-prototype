@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>おばけ面談室 v15</title>
+<title>おばけ面談室 v22</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif;background:#090b14;color:#fff}
 #app{width:min(100vw,470px);height:100dvh;margin:0 auto;background:linear-gradient(#20263b,#0b0d16);overflow:hidden;position:relative}
 .header{height:88px;padding:18px 12px 10px;display:grid;grid-template-columns:1fr 1fr 56px;gap:8px;background:#121624;border-bottom:1px solid rgba(255,255,255,.14)}
 .card{border:1px solid rgba(255,255,255,.16);border-radius:18px;background:rgba(255,255,255,.06);padding:8px 12px}
-.label{font-size:12px;color:#aeb6d1;font-weight:900;white-space:nowrap}
+.label{font-size:12px;color:#aeb6d1;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .value{font-size:28px;font-weight:1000;line-height:1}
 button{font:inherit}
 .pause{border:0;border-radius:18px;background:#b3f7dc;color:#111827;font-size:24px;font-weight:1000}
@@ -43,6 +43,21 @@ dd{margin:4px 0 0;font-weight:900;line-height:1.45}
 .badge{display:inline-block;margin-right:6px;color:#b3f7dc;font-weight:1000}
 .overlay{position:absolute;inset:0;background:rgba(5,6,10,.72);display:grid;place-items:center;z-index:20;padding:24px}
 .overlayCard{background:#f6f8ff;color:#151827;border-radius:24px;padding:22px;text-align:center;width:100%}
+.choiceText{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.choiceNum{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:8px;background:rgba(179,247,220,.18);color:#b3f7dc;margin-right:8px;flex:0 0 auto}
+.choice.inner{display:flex;align-items:center}
+
+/* v21 UI final-ish */
+.room{height:46%;background:linear-gradient(#252b43 0 60%,#171a24 60%)}
+.ghost{top:8px;width:126px;height:166px;box-shadow:0 0 52px rgba(179,247,220,.34)}
+.speech{bottom:10px;min-height:106px;max-height:132px;border-radius:20px}
+.log{bottom:122px;max-height:72px}
+.choice{min-height:62px;max-height:68px;display:flex;align-items:center;gap:8px;overflow:hidden}
+@media(max-height:720px){
+  .ghost{top:0;transform:translateX(-50%) scale(.88);transform-origin:top center}
+  .speech{min-height:94px;max-height:112px}
+  .choice{min-height:56px;max-height:60px;font-size:14px}
+}
 </style>
 </head>
 <body>
@@ -55,10 +70,10 @@ dd{margin:4px 0 0;font-weight:900;line-height:1.45}
   <section id="title" class="screen on">
     <div class="titleBox">
       <h1>おばけ<br>面談室</h1>
-      <p class="sub">v15：ポーズ・結果相性表示まで戻した統合確認版。<br>ここが動けば次の正式版の土台にする。</p>
+      <p class="sub">v22：ほぼ全部戻し版。<br>v15に追加したかった要素を安全構成で全部入れた確認版。</p>
       <button id="startBtn" class="mainBtn">面談を始める</button>
       <p id="debug" class="debug">JS確認中...</p>
-      <p class="sub" style="font-size:12px;margin-top:10px">ポーズと相性結果を追加</p>
+      <p class="sub" style="font-size:12px;margin-top:10px">統合確認版</p>
     </div>
   </section>
   <section id="resume" class="screen">
@@ -70,8 +85,8 @@ dd{margin:4px 0 0;font-weight:900;line-height:1.45}
         <div class="field"><dt>享年</dt><dd id="rAge">---</dd></div>
         <div class="field"><dt>死因</dt><dd id="rCause">---</dd></div>
         <div class="field"><dt>未練</dt><dd id="rRegret">---</dd></div>
-        <div class="field wide"><dt>遺品</dt><dd id="rItem">---</dd></div>
-        <div class="field wide"><dt>面談前の様子</dt><dd id="rMemo">---</dd></div>
+        <div class="field wide"><dt id="itemLabel">遺品</dt><dd id="rItem">---</dd></div>
+        <div class="field wide"><dt id="memoLabel">面談前の様子</dt><dd id="rMemo">---</dd></div>
       </dl>
       <div class="footer"><span>20秒後に入室します</span><button id="skipBtn" class="mainBtn" style="margin-top:0">すぐ面談</button></div>
     </article>
@@ -111,6 +126,13 @@ dd{margin:4px 0 0;font-weight:900;line-height:1.45}
 (function(){
   "use strict";
   function $(id){ return document.getElementById(id); }
+  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+  function pick(arr, n){ return arr[Math.abs(n)%arr.length]; }
+  function hash(s){ var h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+  function rng(seed){ var t=seed>>>0; return function(){ t+=0x6D2B79F5; var x=t; x=Math.imul(x^x>>>15,x|1); x^=x+Math.imul(x^x>>>7,x|61); return ((x^x>>>14)>>>0)/4294967296; }; }
+  function shuffle(a, seed){ a=a.slice(); var r=rng(seed); for(var i=a.length-1;i>0;i--){ var j=Math.floor(r()*(i+1)); var tmp=a[i]; a[i]=a[j]; a[j]=tmp; } return a; }
+  function safe(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];}); }
+
   var screens = {title:$("title"), resume:$("resume"), game:$("game"), result:$("result")};
   var els = {
     score:$("score"), timer:$("timer"), timerLabel:$("timerLabel"), startBtn:$("startBtn"),
@@ -119,63 +141,67 @@ dd{margin:4px 0 0;font-weight:900;line-height:1.45}
     rItem:$("rItem"), rMemo:$("rMemo"), speech:$("speech"), face:$("face"), choices:$("choices"),
     hp:$("hp"), round:$("round"), resultTitle:$("resultTitle"), resultText:$("resultText"),
     finalScore:$("finalScore"), toast:$("toast"), log:$("log"), compat:$("compat"),
-    pauseBtn:$("pauseBtn"), pauseOverlay:$("pauseOverlay"), resumeBtn:$("resumeBtn")
+    pauseBtn:$("pauseBtn"), pauseOverlay:$("pauseOverlay"), resumeBtn:$("resumeBtn"),
+    itemLabel:$("itemLabel"), memoLabel:$("memoLabel")
   };
-  var CONFIG = {resumeTime:20, answerTime:30, maxFails:3, ghostCount:150, version:"v15"};
+  var CONFIG = {resumeTime:20, answerTime:30, maxFails:3, ghostCount:150, version:"v22"};
+
   var maleNames = ["蓮","直人","拓海","悠真","和也","修平","健太","春樹","宗介","亮","大地","誠","航","伊吹","圭吾","智也","蒼太","慎"];
   var femaleNames = ["伊織","美咲","紗季","凛","千尋","真由","絵里","菜月","灯","澪","弥生","小春","遥","鈴音","杏奈","ゆかり","志乃","琴音"];
   var neutralNames = ["ナギ","アオ","ミチ","リツ","トワ","ヒナタ","カナメ","スイ","ユウ","セナ","シオン","カイ","ノア","ルカ"];
   var causes = ["事故","病気","過労","行方不明","災害","転落","水難","古い怪異","原因不明"];
   var faces = ["；_；","・へ・","╥_╥","・_・",">_<","・ω・",";-;","´･_･`","；へ；","・×・"];
-  var regrets = [
-    {name:"家族", item:"折りたたまれた買い物メモ", memo:"家族の話になると玄関の方を見る。", speech:"家に帰る途中だったんです。買い物袋の中身だけ、妙にはっきり覚えています。", want:"care"},
-    {name:"仕事", item:"角の折れた作業ノート", memo:"時間の話になると背筋が伸びる。", speech:"机の上だけ片づけて帰りました。あれで本当に終われたのか、まだ考えています。", want:"logic"},
-    {name:"夢", item:"擦り切れたチケット半券", memo:"未来の話になると少し早口になる。", speech:"向いてなかったのか、続ける根性がなかったのか、まだ分かりません。", want:"hope"},
-    {name:"孤独", item:"未開封の飴玉", memo:"人の気配にはすぐ反応する。", speech:"誰も来ないのは慣れていたはずなのに、最後の日だけ寂しかった。", want:"listen"},
-    {name:"怒り", item:"破れた領収書", memo:"穏やかに話すほど指先が震える。", speech:"許したことになっているのが、いちばん腹立たしいんです。", want:"anger"},
-    {name:"思い出", item:"小さな缶バッジ", memo:"好きなものの話だけ少し目が明るい。", speech:"くだらないものばかり集めていたと言われました。でも、私には大事でした。", want:"memory"},
-    {name:"約束", item:"止まった腕時計", memo:"時間を聞かれると顔を伏せる。", speech:"約束の場所には行けませんでした。相手が待っていたかも分かりません。", want:"closure"},
-    {name:"罪悪感", item:"折れた鍵", memo:"自分を責める言葉だけすらすら出る。", speech:"謝る相手を間違えた気がします。誰に謝ればいいのかも分からない。", want:"scold"},
-    {name:"継承", item:"書きかけのノート", memo:"途中という言葉に強く反応する。", speech:"途中で止まったものを、置いていくのが怖いんです。", want:"inherit"},
-    {name:"雑談", item:"古い喫茶店のレシート", memo:"本題を避けるように小さな話をする。", speech:"本題の前に、少しだけ関係ない話をしてもいいですか。", want:"chat"}
-  ];
-
-  var modeReplies = {
-    chat:{finish:"最後に普通の話ができて、やっと帰れます。", react:"面談って、もっと怖いものかと思ってました。"},
-    scold:{finish:"ちゃんと怒ってくれて、やっと自分のしたことを見られました。", react:"今の、少し痛いです。でも逃げなくて済みます。"},
-    vent:{finish:"聞いてもらえたら、思ったより軽くなりました。", react:"正しくなくても、聞いてもらえるんですね。"},
-    listen:{finish:"急かされなかったから、置いていけます。", react:"黙って待ってくれるの、助かります。"},
-    logic:{finish:"筋道が見えたら、やっと足が動きます。", react:"もう少し分けて考えたら、見えそうです。"},
-    closure:{finish:"ここで終わりにします。今度こそ自分で閉じられます。", react:"終わらせるって、冷たいことじゃないんですね。"},
-    care:{finish:"見てくれる人がいたなら、もう十分です。", react:"そんなふうに見てもらえるとは思いませんでした。"},
-    memory:{finish:"その小さな記憶ごと、持って行っていいんですね。", react:"そうです。そういう小さいことが、ずっと残っていて。"},
-    hope:{finish:"叶わなかった未来にも、意味があったんですね。", react:"少しだけ、先の話をしてもいいんですね。"},
-    inherit:{finish:"続きは誰かに渡していいんですね。肩の力が抜けました。", react:"誰かに渡すって、投げ出すこととは違うんですか。"},
-    anger:{finish:"怒っていいと言われて、やっと力が抜けました。", react:"きれいにしなくていいんですね。"}
-  };
-
   var typeTags = ["ISTJ","ISFJ","INFJ","INTJ","ISTP","ISFP","INFP","INTP","ESTP","ESFP","ENFP","ENTP","ESTJ","ESFJ","ENFJ","ENTJ"];
   var typeWants = {ISTJ:"logic",ISFJ:"care",INFJ:"listen",INTJ:"logic",ISTP:"listen",ISFP:"memory",INFP:"listen",INTP:"logic",ESTP:"anger",ESFP:"chat",ENFP:"hope",ENTP:"chat",ESTJ:"closure",ESFJ:"care",ENFJ:"inherit",ENTJ:"inherit"};
+  var regrets = [
+    {name:"家族", item:"折りたたまれた買い物メモ", witness:"家族の話になると玄関の方を見る。", speech:"家に帰る途中だったんです。買い物袋の中身だけ、妙にはっきり覚えています。", want:"care"},
+    {name:"仕事", item:"角の折れた作業ノート", witness:"時間の話になると背筋が伸びる。", speech:"机の上だけ片づけて帰りました。あれで本当に終われたのか、まだ考えています。", want:"logic"},
+    {name:"夢", item:"擦り切れたチケット半券", witness:"未来の話になると少し早口になる。", speech:"向いてなかったのか、続ける根性がなかったのか、まだ分かりません。", want:"hope"},
+    {name:"孤独", item:"未開封の飴玉", witness:"人の気配にはすぐ反応する。", speech:"誰も来ないのは慣れていたはずなのに、最後の日だけ寂しかった。", want:"listen"},
+    {name:"怒り", item:"破れた領収書", witness:"穏やかに話すほど指先が震える。", speech:"許したことになっているのが、いちばん腹立たしいんです。", want:"anger"},
+    {name:"思い出", item:"小さな缶バッジ", witness:"好きなものの話だけ少し目が明るい。", speech:"くだらないものばかり集めていたと言われました。でも、私には大事でした。", want:"memory"},
+    {name:"約束", item:"止まった腕時計", witness:"時間を聞かれると顔を伏せる。", speech:"約束の場所には行けませんでした。相手が待っていたかも分かりません。", want:"closure"},
+    {name:"罪悪感", item:"折れた鍵", witness:"自分を責める言葉だけすらすら出る。", speech:"謝る相手を間違えた気がします。誰に謝ればいいのかも分からない。", want:"scold"},
+    {name:"継承", item:"書きかけのノート", witness:"途中という言葉に強く反応する。", speech:"途中で止まったものを、置いていくのが怖いんです。", want:"inherit"},
+    {name:"雑談", item:"古い喫茶店のレシート", witness:"本題を避けるように小さな話をする。", speech:"本題の前に、少しだけ関係ない話をしてもいいですか。", want:"chat"}
+  ];
+  var modeReplies = {
+    chat:{finish:"最後に普通の話ができて、やっと帰れます。", react:"面談って、もっと怖いものかと思ってました。", q:"面談なのに、笑っても怒られませんか。"},
+    scold:{finish:"ちゃんと怒ってくれて、やっと自分のしたことを見られました。", react:"今の、少し痛いです。でも逃げなくて済みます。", q:"怒られたら楽になるなんて、変ですか。"},
+    vent:{finish:"聞いてもらえたら、思ったより軽くなりました。", react:"正しくなくても、聞いてもらえるんですね。", q:"きれいごとにする前に、もっと文句を言っていいですか。"},
+    listen:{finish:"急かされなかったから、置いていけます。", react:"黙って待ってくれるの、助かります。", q:"沈黙しても、ここにいていいですか。"},
+    logic:{finish:"筋道が見えたら、やっと足が動きます。", react:"もう少し分けて考えたら、見えそうです。", q:"原因を一つずつ見るなら、どこからですか。"},
+    closure:{finish:"ここで終わりにします。今度こそ自分で閉じられます。", react:"終わらせるって、冷たいことじゃないんですね。", q:"終わらせるって、逃げることとは違いますか。"},
+    care:{finish:"見てくれる人がいたなら、もう十分です。", react:"そんなふうに見てもらえるとは思いませんでした。", q:"私のしてきたこと、無駄じゃなかったんでしょうか。"},
+    memory:{finish:"その小さな記憶ごと、持って行っていいんですね。", react:"そうです。そういう小さいことが、ずっと残っていて。", q:"こんな小さい思い出で泣くの、変ですか。"},
+    hope:{finish:"叶わなかった未来にも、意味があったんですね。", react:"少しだけ、先の話をしてもいいんですね。", q:"まだ未来の話をしてもいいんでしょうか。"},
+    inherit:{finish:"続きは誰かに渡していいんですね。肩の力が抜けました。", react:"誰かに渡すって、投げ出すこととは違うんですか。", q:"途中で渡すのは、投げ出すことですか。"},
+    anger:{finish:"怒っていいと言われて、やっと力が抜けました。", react:"きれいにしなくていいんですね。", q:"許したことにしなくても、いいんですか。"}
+  };
 
   var choiceBank = [
-    {text:"何が引っかかっているか、分けましょう。", tag:"logic"},
-    {text:"その話、最後まで聞きます。", tag:"listen"},
-    {text:"そこまでしたことは、ちゃんと残っています。", tag:"care"},
-    {text:"叶わなかった時間も、失敗だけじゃないです。", tag:"hope"},
-    {text:"少しだけ、関係ない話をしましょうか。", tag:"chat"},
-    {text:"それ、腹が立って当然です。", tag:"anger"},
-    {text:"ここで区切っても大丈夫です。", tag:"closure"},
-    {text:"小さい思い出ほど、残っていいんです。", tag:"memory"},
-    {text:"その続きは、誰かに渡してもいいんです。", tag:"inherit"},
-    {text:"逃げたことまで、なかったことにしなくていいです。", tag:"scold"},
-    {text:"前向きに考えた方がいいです。", tag:"bad"},
-    {text:"もう終わったことですよね。", tag:"bad"},
-    {text:"誰にでもあることだと思います。", tag:"bad"},
-    {text:"自業自得だったんじゃないですか。", tag:"trap"},
-    {text:"誰も覚えていないと思います。", tag:"trap"},
-    {text:"意味を探しても無駄です。", tag:"trap"}
+    {text:"何が引っかかっているか、分けましょう。", tag:"logic", role:"pull"},
+    {text:"その話、最後まで聞きます。", tag:"listen", role:"pull"},
+    {text:"そこまでしたことは、ちゃんと残っています。", tag:"care", role:"pull"},
+    {text:"叶わなかった時間も、失敗だけじゃないです。", tag:"hope", role:"pull"},
+    {text:"少しだけ、関係ない話をしましょうか。", tag:"chat", role:"pull"},
+    {text:"それ、腹が立って当然です。", tag:"anger", role:"pull"},
+    {text:"ここで区切っても大丈夫です。", tag:"closure", role:"pull"},
+    {text:"小さい思い出ほど、残っていいんです。", tag:"memory", role:"pull"},
+    {text:"その続きは、誰かに渡してもいいんです。", tag:"inherit", role:"pull"},
+    {text:"逃げたことまで、なかったことにしなくていいです。", tag:"scold", role:"pull"},
+    {text:"続きから聞かせてください。", tag:"watch", role:"watch"},
+    {text:"すぐには決めつけません。", tag:"watch", role:"watch"},
+    {text:"今はまだ、結論を出さずに聞きます。", tag:"watch", role:"watch"},
+    {text:"前向きに考えた方がいいです。", tag:"bad", role:"distrust"},
+    {text:"もう終わったことですよね。", tag:"bad", role:"distrust"},
+    {text:"誰にでもあることだと思います。", tag:"bad", role:"distrust"},
+    {text:"自業自得だったんじゃないですか。", tag:"trap", role:"trap"},
+    {text:"誰も覚えていないと思います。", tag:"trap", role:"trap"},
+    {text:"意味を探しても無駄です。", tag:"trap", role:"trap"}
   ];
-  var state = {phase:"title", i:0, score:0, fails:0, resumeTime:20, answerTime:30, current:null, hp:0, trust:0, timer:null, paused:false, compat:{}};
+
+  var state = {phase:"title", i:0, score:0, fails:0, resumeTime:20, answerTime:30, current:null, hp:0, trust:0, maxHp:0, maxTrust:0, timer:null, paused:false, compat:{}, used:{}, recent:[]};
   function show(name){ Object.keys(screens).forEach(function(k){ screens[k].classList.toggle("on", k === name); }); }
   function toast(msg){ els.toast.textContent=msg; els.toast.classList.remove("hidden"); clearTimeout(toast.t); toast.t=setTimeout(function(){els.toast.classList.add("hidden");},1000); }
   function updateHeader(){
@@ -184,57 +210,101 @@ dd{margin:4px 0 0;font-weight:900;line-height:1.45}
     else if(state.phase==="game"){ els.timerLabel.textContent="回答"; els.timer.textContent=state.answerTime.toFixed(1); }
     else { els.timerLabel.textContent="待機"; els.timer.textContent="--"; }
   }
+  function buildBig5(n, type){
+    var seed=hash(type+"-"+n); var r=rng(seed);
+    return {E:Math.round(r()*100), A:Math.round(r()*100), C:Math.round(r()*100), N:Math.round(r()*100), O:Math.round(r()*100)};
+  }
+  function pickName(gender, n){
+    var names = gender === "女性" ? femaleNames : (gender === "男性" ? maleNames : neutralNames);
+    return names[(n*7)%names.length];
+  }
   function makeGhost(n){
     var regret = regrets[n % regrets.length];
     var genderRoll = n % 20;
     var gender = genderRoll < 9 ? "女性" : (genderRoll < 18 ? "男性" : "不明");
-    var names = gender === "女性" ? femaleNames : (gender === "男性" ? maleNames : neutralNames);
-    var name = names[(n * 7) % names.length];
+    var type = typeTags[n % typeTags.length];
+    var name = pickName(gender, n);
     var age = 16 + ((n * 13) % 73);
     var want = regret.want;
-    var type = "";
+    var memo = regret.witness;
 
-    type = typeTags[n % typeTags.length];
+    var b = buildBig5(n, type);
     if(n % 3 === 0){ want = typeWants[type] || want; }
-
-    var memo = regret.memo;
-
+    if(b.N > 68){ memo += " 軽い励ましには傷つきやすい。"; }
+    else if(b.A > 70){ memo += " 相手の反応を先に気にする。"; }
+    else if(b.O > 70){ memo += " 話が少し飛びやすい。"; }
+    else if(b.C > 70){ memo += " 役目や責任をまだ数えている。"; }
+    else { memo += " 本音を出すまで少し時間がかかる。"; }
     if(age < 20){ memo += " 言葉より表情が先に出る。"; }
     else if(age < 35){ memo += " 選ばなかった道を気にしている。"; }
     else if(age < 55){ memo += " 責任や役目の話に反応しやすい。"; }
     else { memo += " 急かされると黙り込む。"; }
-    memo += " " + type + "風。";
 
-    return {name:name, gender:gender, age:age, cause:causes[(n*5)%causes.length], regret:regret.name, item:regret.item, memo:memo, face:faces[(n*11)%faces.length], hp:3+(n%3), trust:4+(n%2), speech:regret.speech, want:want, type:type};
+    var avoid = want==="logic" ? "根拠のない励まし" : want==="listen" ? "急な結論" : want==="anger" ? "きれいごと" : want==="chat" ? "説教" : "軽く扱う言葉";
+    memo = memo + " 避けたい話し方：" + avoid + "。";
+
+    return {name:name, gender:gender, age:age, cause:causes[(n*5)%causes.length], regret:regret.name, item:regret.item, memo:memo, face:faces[(n*11)%faces.length], maxHp:3+(n%3), maxTrust:4+(n%2), speech:regret.speech, want:want, type:type, seed:hash(name+type+n)};
   }
   function buildGhosts(){ var arr=[]; for(var i=0;i<CONFIG.ghostCount;i++){ arr.push(makeGhost(i)); } return arr; }
   var ghosts = buildGhosts();
   function start(){ state.i=0; state.score=0; state.fails=0; state.compat={}; state.paused=false; if(state.timer) clearInterval(state.timer); state.timer=setInterval(tick,100); loadGhost(); }
-  function loadGhost(){ if(state.fails>=3){ end("ゲームオーバー","3回成仏に失敗しました。"); return; } state.current=ghosts[state.i%ghosts.length]; state.resumeTime=20; state.answerTime=30; state.hp=state.current.hp; state.trust=state.current.trust; state.phase="resume"; renderResume(); show("resume"); updateHeader(); }
-  function renderResume(){ var g=state.current; els.rName.textContent=g.name; els.rGender.textContent=g.gender; els.rAge.textContent=g.age+"歳"; els.rCause.textContent=g.cause; els.rRegret.textContent=g.regret; els.rItem.textContent=g.item; els.rMemo.textContent=g.memo; }
-  function begin(){ if(state.phase!=="resume") return; state.phase="game"; state.answerTime=30; els.face.textContent=state.current.face; els.speech.textContent=state.current.speech;
+  function loadGhost(){
+    if(state.fails>=3){ end("ゲームオーバー","3回成仏に失敗しました。"); return; }
+    state.current=ghosts[state.i%ghosts.length]; state.resumeTime=20; state.answerTime=30; state.maxHp=state.current.maxHp; state.maxTrust=state.current.maxTrust; state.hp=state.maxHp; state.trust=state.maxTrust; state.phase="resume"; state.used={}; state.recent=[];
+    renderResume(); show("resume"); updateHeader();
+  }
+  function renderResume(){
+    var g=state.current; els.rName.textContent=g.name; els.rGender.textContent=g.gender; els.rAge.textContent=g.age+"歳"; els.rCause.textContent=g.cause; els.rRegret.textContent=g.regret; els.rItem.textContent=g.item; els.rMemo.textContent=g.memo;
 
-    els.log.classList.remove("hidden"); els.log.innerHTML='<span class="badge">おばけ</span>'+state.current.speech;
+    els.itemLabel.textContent = "遺品";
+    els.memoLabel.textContent = "入室前メモ";
 
-    show("game"); renderGame(); updateHeader(); }
+  }
+  function begin(){
+    if(state.phase!=="resume") return;
+    state.phase="game"; state.answerTime=30; els.face.textContent=state.current.face; els.speech.textContent=state.current.speech;
+
+    var opener = modeReplies[state.current.want] ? modeReplies[state.current.want].q : state.current.speech;
+    els.speech.textContent = state.current.speech + " " + opener;
+
+    els.log.classList.remove("hidden"); els.log.innerHTML='<span class="badge">おばけ</span>'+els.speech.textContent;
+
+    show("game"); renderGame(); updateHeader();
+  }
+  function fit(c){ return c.tag===state.current.want ? 2 : (c.role==="watch" ? 0 : (c.tag==="bad" ? -1 : 1)); }
   function renderGame(){
-    els.hp.textContent="成仏HP "+state.hp+" / 不信HP "+state.trust; els.round.textContent="失敗 "+state.fails+"/3"; els.choices.innerHTML="";
-    var pool=choiceBank.slice().sort(function(){return Math.random()-.5;}).slice(0,4);
+    els.hp.textContent="成仏HP "+state.hp+"/"+state.maxHp+" / 不信HP "+state.trust+"/"+state.maxTrust;
+    els.round.textContent="失敗 "+state.fails+"/3"; els.choices.innerHTML="";
+    var seed = state.current.seed + state.hp*17 + state.trust*31 + state.i*7;
+    var pool = choiceBank.slice();
+
+    pool = pool.filter(function(c){ return !state.used[c.text]; });
+    if(pool.length < 4){ state.used = {}; pool = choiceBank.slice(); }
+    pool = pool.sort(function(a,b){
+      var ap = state.recent.indexOf(a.tag)>=0 ? 2 : 0;
+      var bp = state.recent.indexOf(b.tag)>=0 ? 2 : 0;
+      return (bp-ap) || (Math.random()-.5);
+    });
+
+    var choices = pool.slice(0,4);
     var correct=null; for(var i=0;i<choiceBank.length;i++){ if(choiceBank[i].tag===state.current.want){ correct=choiceBank[i]; break; } }
-    if(correct){ pool[0]=correct; }
-    pool=pool.sort(function(){return Math.random()-.5;});
-    pool.forEach(function(c,idx){ var b=document.createElement("button"); b.className="choice"; b.textContent=(idx+1)+". "+c.text; b.onclick=function(){choose(c);}; els.choices.appendChild(b); });
+    if(correct){ choices[0]=correct; }
+    choices=shuffle(choices, seed);
+    choices.forEach(function(c,idx){
+      var b=document.createElement("button"); b.className="choice";
+
+      b.innerHTML='<span class="choiceNum">'+(idx+1)+'</span><span class="choiceText">'+safe(c.text)+'</span>';
+
+      b.onclick=function(){choose(c);}; els.choices.appendChild(b);
+    });
   }
   function choose(c){
-    if(state.phase!=="game") return; state.answerTime=30;
-    if(c.tag==="trap"){ fail("その言葉で、おばけは黙って面談室を出ていきました。"); return; }
+    if(state.phase!=="game") return; state.answerTime=30; state.used[c.text]=true; state.recent.push(c.tag); if(state.recent.length>2) state.recent.shift();
+    if(c.role==="trap"){ fail("その言葉で、おばけは黙って面談室を出ていきました。"); return; }
     var reply="";
-    if(c.tag===state.current.want){ state.hp-=2;
-
-      reply = modeReplies[state.current.want] ? modeReplies[state.current.want].react : "……今の言葉、少し届きました。";
-
-      els.speech.textContent=reply; toast("成仏HPが大きく減った");
-    } else if(c.tag==="bad"){ state.trust-=1; reply="……すみません。今の言い方だと、少し遠く感じます。"; els.speech.textContent=reply; toast("不信HPが減った"); }
+    if(c.tag===state.current.want){ state.hp-=2; reply = modeReplies[state.current.want] ? modeReplies[state.current.want].react : "……今の言葉、少し届きました。"; els.speech.textContent=reply; toast("成仏HPが大きく減った"); }
+    else if(c.role==="watch"){ reply = modeReplies[state.current.want] ? modeReplies[state.current.want].q : "もう少しだけ、続けてもいいですか。"; els.speech.textContent=reply; toast("様子見。HP変化なし"); }
+    else if(c.role==="distrust"){ state.trust-=1; reply="……すみません。今の言い方だと、少し遠く感じます。"; els.speech.textContent=reply; toast("不信HPが減った"); }
     else { state.hp-=1; reply="そういう見方も、あるんですね。少し続けてもいいですか。"; els.speech.textContent=reply; toast("少し届いた"); }
 
     els.log.innerHTML='<span class="badge">あなた</span>'+c.text+'<br><span class="badge">おばけ</span>'+reply;
@@ -243,25 +313,21 @@ dd{margin:4px 0 0;font-weight:900;line-height:1.45}
     if(state.trust<=0){ fail("おばけはこれ以上話してくれなくなりました。"); return; }
     renderGame(); updateHeader();
   }
-  function ascend(){ var g=state.current; state.score++; state.i++; if(g.type){ state.compat[g.type]=(state.compat[g.type]||0)+1; }
-
-    els.speech.textContent = modeReplies[g.want] ? modeReplies[g.want].finish : "……ありがとうございます。やっと行けそうです。";
-
-    els.choices.innerHTML=""; toast("成仏しました"); state.phase="transition"; setTimeout(loadGhost,900);
-  }
+  function ascend(){ var g=state.current; state.score++; state.i++; if(g.type){ state.compat[g.type]=(state.compat[g.type]||0)+1; } els.speech.textContent = modeReplies[g.want] ? modeReplies[g.want].finish : "……ありがとうございます。やっと行けそうです。"; els.choices.innerHTML=""; toast("成仏しました"); state.phase="transition"; setTimeout(loadGhost,900); }
   function fail(reason){ state.fails++; state.i++; els.speech.textContent=reason; els.choices.innerHTML=""; toast("成仏失敗 "+state.fails+"/3"); state.phase="transition"; setTimeout(loadGhost,1000); }
-  function end(title,text){ state.phase="result"; if(state.timer) clearInterval(state.timer); els.resultTitle.textContent=title; els.resultText.textContent=text; els.finalScore.textContent=state.score;
-
-    var best="", bestN=0; Object.keys(state.compat).forEach(function(k){ if(state.compat[k]>bestN){ best=k; bestN=state.compat[k]; }}); els.compat.textContent=best?("相性がよかったタイプ："+best+"風（"+bestN+"体）"):"相性タイプはまだ判定できません。";
-
-    show("result"); updateHeader(); }
+  function end(title,text){
+    state.phase="result"; if(state.timer) clearInterval(state.timer); els.resultTitle.textContent=title; els.resultText.textContent=text; els.finalScore.textContent=state.score;
+    var best="", bestN=0; Object.keys(state.compat).forEach(function(k){ if(state.compat[k]>bestN){ best=k; bestN=state.compat[k]; }});
+    els.compat.textContent=best?("相性がよかったタイプ："+best+"風（"+bestN+"体）"):"相性タイプはまだ判定できません。";
+    show("result"); updateHeader();
+  }
   function tick(){ if(state.paused) return; if(state.phase==="resume"){ state.resumeTime=Math.max(0,state.resumeTime-.1); if(state.resumeTime<=0) begin(); } else if(state.phase==="game"){ state.answerTime=Math.max(0,state.answerTime-.1); if(state.answerTime<=0) fail("返事を待ったまま、おばけは面談室を出ていきました。"); } updateHeader(); }
   els.startBtn.onclick=start; els.skipBtn.onclick=begin; els.restartBtn.onclick=start;
 
   els.pauseBtn.onclick=function(){ if(state.phase==="title" || state.phase==="result") return; state.paused=true; els.pauseOverlay.classList.remove("hidden"); };
   els.resumeBtn.onclick=function(){ state.paused=false; els.pauseOverlay.classList.add("hidden"); };
 
-  els.debug.textContent="JS起動済み。150体生成あり。";
+  els.debug.textContent="JS起動済み。v22";
   updateHeader();
 })();
 
