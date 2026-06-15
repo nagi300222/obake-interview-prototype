@@ -1,1213 +1,185 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>おばけ面談室 v9 Clean</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>おばけ面談室 v10 最小動作版</title>
 <style>
-:root{
-  --bg:#0d101b;
-  --panel:#1d2335;
-  --panel2:#252b40;
-  --ink:#202231;
-  --muted:#aeb6d1;
-  --line:rgba(255,255,255,.14);
-  --paper:#f4ecdc;
-  --accent:#b3f7dc;
-  --good:#a6f0c3;
-  --danger:#ff7695;
-  --warn:#ffd36e;
-  --ghost:#edf9ff;
-  --shadow:0 18px 55px rgba(0,0,0,.35);
-  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
-}
 *{box-sizing:border-box}
-html,body{height:100%;margin:0}
-body{
-  background:radial-gradient(circle at 50% 0%,#2a304b 0%,#10131f 55%,#070811 100%);
-  color:#f6f8ff;
-  overflow:hidden;
-}
-button{font:inherit;-webkit-tap-highlight-color:transparent}
-.app{
-  width:min(100vw,470px);
-  height:100dvh;
-  margin:0 auto;
-  position:relative;
-  overflow:hidden;
-  background:linear-gradient(180deg,rgba(26,30,48,.98),rgba(8,10,18,.99));
-  box-shadow:0 0 0 1px rgba(255,255,255,.06),var(--shadow);
-}
-.topbar{
-  height:calc(70px + env(safe-area-inset-top));
-  padding:calc(10px + env(safe-area-inset-top)) 12px 10px;
-  display:grid;
-  grid-template-columns:1fr 1.18fr 56px;
-  gap:8px;
-  border-bottom:1px solid var(--line);
-  background:rgba(10,12,22,.84);
-  backdrop-filter:blur(14px);
-  position:relative;
-  z-index:8;
-}
-.stat,.timer{
-  border:1px solid var(--line);
-  border-radius:18px;
-  background:rgba(255,255,255,.055);
-  padding:7px 11px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  line-height:1.02;
-  overflow:hidden;
-}
-.label{
-  color:var(--muted);
-  font-size:11px;
-  font-weight:900;
-  letter-spacing:.08em;
-  white-space:nowrap;
-}
-.stat strong,.timer strong{font-size:27px;letter-spacing:-.04em}
-.timer small{font-size:12px;color:var(--muted);margin-left:2px}
-.timer.danger{border-color:rgba(255,118,149,.78);background:rgba(255,118,149,.13)}
-.btn{
-  border:0;
-  border-radius:18px;
-  padding:11px 14px;
-  color:#10131f;
-  background:var(--accent);
-  font-weight:1000;
-  box-shadow:0 8px 18px rgba(0,0,0,.22);
-  cursor:pointer;
-}
-.btn:active{transform:translateY(1px) scale(.99)}
-.btn.small{padding:0;font-size:23px}
-.btn.primary{width:100%;margin-top:16px}
-.screen{
-  display:none;
-  height:calc(100dvh - 70px - env(safe-area-inset-top));
-}
-.screen.active{display:block}
-
-.title{
-  padding:18px 14px calc(16px + env(safe-area-inset-bottom));
-  background:
-    radial-gradient(circle at 50% 17%,rgba(179,247,220,.18),transparent 36%),
-    linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.20));
-}
-.title-card{
-  height:100%;
-  border:1px solid var(--line);
-  border-radius:28px;
-  padding:26px 20px;
-  background:rgba(255,255,255,.075);
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  text-align:center;
-  box-shadow:var(--shadow);
-}
-.kicker{margin:0 0 9px;color:var(--accent);font-size:12px;font-weight:1000;letter-spacing:.18em}
-.title h1{margin:0;font-size:clamp(38px,12vw,56px);line-height:1.02;letter-spacing:-.05em}
-.copy{margin:16px 0 0;color:#dce4f8;line-height:1.75;font-weight:850}
-.rules{display:grid;gap:8px;margin:20px 0 0}
-.rules span{
-  border:1px solid var(--line);
-  border-radius:999px;
-  padding:9px 12px;
-  background:rgba(255,255,255,.055);
-  color:#eef3ff;
-  font-weight:900;
-  font-size:13px;
-}
-.note{margin:13px 0 0;color:var(--muted);font-size:12px;line-height:1.55}.note.ok{color:var(--accent);font-weight:900}
-
-.resume{
-  padding:16px 14px calc(16px + env(safe-area-inset-bottom));
-  background:
-    radial-gradient(circle at 35% 18%,rgba(179,247,220,.10),transparent 34%),
-    linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,.12));
-}
-.paper{
-  height:100%;
-  background:var(--paper);
-  color:var(--ink);
-  border-radius:24px;
-  padding:18px;
-  display:flex;
-  flex-direction:column;
-  position:relative;
-  overflow:hidden;
-  box-shadow:var(--shadow);
-}
-.paper:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    linear-gradient(90deg,transparent 0 95%,rgba(0,0,0,.035) 95% 100%),
-    linear-gradient(0deg,transparent 0 95%,rgba(0,0,0,.035) 95% 100%);
-  background-size:24px 24px;
-  pointer-events:none;
-}
-.stamp{
-  align-self:flex-start;
-  border:2px solid #bd4d4d;
-  color:#bd4d4d;
-  border-radius:8px;
-  padding:5px 9px;
-  transform:rotate(-2.4deg);
-  font-weight:1000;
-  letter-spacing:.09em;
-  margin-bottom:11px;
-  position:relative;
-}
-.paper h1{
-  margin:5px 0 13px;
-  font-size:30px;
-  border-bottom:3px double rgba(32,34,49,.23);
-  padding-bottom:10px;
-  position:relative;
-}
-.resume-grid{
-  margin:0;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  position:relative;
-  overflow:auto;
-  padding-bottom:10px;
-}
-.resume-grid div{
-  border:1px solid rgba(32,34,49,.16);
-  border-radius:15px;
-  padding:10px;
-  background:rgba(255,255,255,.42);
-  min-height:64px;
-}
-.resume-grid .wide{grid-column:1/-1}
-dt{font-size:11px;color:#6d5d63;font-weight:1000;letter-spacing:.08em}
-dd{margin:4px 0 0;font-weight:850;line-height:1.46}
-.resume-footer{
-  margin-top:auto;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  position:relative;
-}
-.resume-footer span{color:#6d5d63;font-size:13px;font-weight:900}
-
-.game{
-  display:none;
-  grid-template-rows:minmax(300px,45%) 1fr;
-}
-.game.active{display:grid}
-.room{
-  position:relative;
-  overflow:hidden;
-  border-bottom:1px solid var(--line);
-  background:
-    linear-gradient(180deg,#252b43 0 58%,#171a24 58% 100%);
-}
-.room-light{
-  position:absolute;
-  top:-40px;
-  left:50%;
-  width:300px;
-  height:260px;
-  transform:translateX(-50%);
-  background:radial-gradient(ellipse,rgba(255,239,184,.18),transparent 67%);
-  pointer-events:none;
-}
-.board{
-  position:absolute;
-  top:14px;
-  right:14px;
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:11px;
-  padding:6px 11px;
-  background:rgba(0,0,0,.18);
-  color:#d4d9ea;
-  font-size:12px;
-  font-weight:1000;
-  letter-spacing:.14em;
-}
-.ghost-stage{
-  position:absolute;
-  left:0;
-  right:0;
-  top:4px;
-  bottom:130px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transform:translateY(-22px);
-  pointer-events:none;
-}
-.ghost{
-  width:148px;
-  height:205px;
-  position:relative;
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-  animation:floaty 2.8s ease-in-out infinite;
-  z-index:2;
-}
-.aura{
-  position:absolute;
-  width:205px;
-  height:205px;
-  bottom:20px;
-  border-radius:999px;
-  background:radial-gradient(circle,var(--aura,rgba(179,247,220,.23)),transparent 68%);
-  filter:blur(8px);
-}
-.body{
-  width:120px;
-  height:156px;
-  background:linear-gradient(180deg,var(--ghostColor,#edf9ff),rgba(237,249,255,.72));
-  border-radius:61px 61px 30px 30px;
-  position:relative;
-  box-shadow:0 0 35px rgba(179,247,220,.20),inset 0 -14px 18px rgba(0,0,0,.08);
-}
-.body:before,.body:after{
-  content:"";
-  position:absolute;
-  bottom:-17px;
-  width:40px;
-  height:40px;
-  background:rgba(237,249,255,.72);
-  border-radius:0 0 999px 999px;
-}
-.body:before{left:12px}
-.body:after{right:12px}
-.face{
-  position:absolute;
-  top:47px;
-  left:50%;
-  transform:translateX(-50%);
-  color:#293148;
-  font-size:26px;
-  white-space:nowrap;
-  font-weight:1000;
-}
-.accessory{
-  position:absolute;
-  left:50%;
-  top:97px;
-  transform:translateX(-50%) rotate(-2deg);
-  padding:3px 8px;
-  border-radius:8px;
-  background:rgba(13,16,27,.68);
-  color:#f8fbff;
-  font-size:11px;
-  font-weight:1000;
-  white-space:nowrap;
-}
-.desk{
-  position:absolute;
-  bottom:0;
-  left:6%;
-  width:88%;
-  height:56px;
-  border-radius:22px 22px 0 0;
-  background:linear-gradient(180deg,#745342,#412d27);
-  box-shadow:0 -8px 20px rgba(0,0,0,.20);
-}
-.speech{
-  position:absolute;
-  left:12px;
-  right:12px;
-  bottom:12px;
-  min-height:104px;
-  max-height:128px;
-  overflow:auto;
-  border-radius:19px;
-  padding:12px 14px;
-  background:rgba(246,248,252,.94);
-  color:#151827;
-  box-shadow:0 12px 30px rgba(0,0,0,.28);
-  z-index:4;
-}
-.speech:before{
-  content:"";
-  position:absolute;
-  top:-8px;
-  left:50%;
-  width:18px;
-  height:18px;
-  background:rgba(246,248,252,.94);
-  transform:translateX(-50%) rotate(45deg);
-}
-.speaker{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  color:#626b81;
-  font-size:12px;
-  font-weight:1000;
-  margin-bottom:6px;
-}
-#speakerMeta{
-  max-width:42%;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-#speechText{
-  margin:0;
-  font-size:15px;
-  font-weight:850;
-  line-height:1.55;
-}
-.choice-area{
-  padding:10px 12px calc(14px + env(safe-area-inset-bottom));
-  display:flex;
-  flex-direction:column;
-  gap:9px;
-  min-height:0;
-}
-.status{
-  display:flex;
-  gap:8px;
-  min-height:29px;
-}
-.status span{
-  border:1px solid var(--line);
-  border-radius:999px;
-  padding:6px 10px;
-  background:rgba(255,255,255,.05);
-  color:#d7ddef;
-  font-size:11px;
-  font-weight:1000;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-#hpChip{flex:1}
-.choices{
-  display:grid;
-  gap:9px;
-  min-height:0;
-  overflow-y:auto;
-  padding-bottom:4px;
-}
-.choice{
-  width:100%;
-  min-height:62px;
-  max-height:66px;
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:18px;
-  padding:9px 12px;
-  background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.035));
-  color:#f7f9ff;
-  display:flex;
-  align-items:center;
-  gap:9px;
-  text-align:left;
-  font-weight:900;
-  line-height:1.34;
-  overflow:hidden;
-  box-shadow:0 9px 18px rgba(0,0,0,.16);
-}
-.choice:active{transform:translateY(1px)}
-.num{
-  flex:0 0 auto;
-  display:inline-grid;
-  place-items:center;
-  width:23px;
-  height:23px;
-  border-radius:8px;
-  background:rgba(179,247,220,.18);
-  color:var(--accent);
-  font-size:12px;
-}
-.choice-text{
-  display:-webkit-box;
-  -webkit-line-clamp:2;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
-  overflow-wrap:anywhere;
-}
-.result{
-  padding:16px 14px calc(16px + env(safe-area-inset-bottom));
-  background:radial-gradient(circle at 50% 18%,rgba(255,118,149,.12),transparent 35%);
-}
-.result-card{
-  height:100%;
-  border:1px solid var(--line);
-  border-radius:24px;
-  padding:20px;
-  background:rgba(255,255,255,.075);
-  box-shadow:var(--shadow);
-  overflow:auto;
-}
-.result-card h2{margin:0 0 8px;font-size:28px}
-.result-card p{color:#d8dff1;line-height:1.65}
-.scorebox{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  border:1px solid rgba(179,247,220,.25);
-  border-radius:18px;
-  background:rgba(179,247,220,.10);
-  padding:14px;
-  margin:16px 0;
-}
-.scorebox span{color:var(--muted);font-weight:900}
-.scorebox strong{font-size:40px;color:var(--accent)}
-.compat h3{font-size:15px;margin:16px 0 8px}
-.compat ol{padding-left:22px;margin:0}
-.compat li{margin:8px 0;line-height:1.55;color:#eef2ff}
-.compat small{display:block;color:var(--muted);margin-top:2px}
-.overlay{
-  position:absolute;
-  inset:0;
-  z-index:30;
-  display:grid;
-  place-items:center;
-  padding:24px;
-  background:rgba(5,6,10,.68);
-  backdrop-filter:blur(10px);
-}
-.overlay.hidden,.toast.hidden{display:none}
-.pause-card{
-  width:100%;
-  border-radius:24px;
-  padding:22px;
-  text-align:center;
-  background:#f6f8ff;
-  color:#151827;
-}
-.pause-card p{color:#5a6278;line-height:1.6}
-.toast{
-  position:absolute;
-  left:14px;
-  right:14px;
-  bottom:calc(14px + env(safe-area-inset-bottom));
-  z-index:20;
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:12px 14px;
-  background:rgba(13,16,27,.90);
-  color:#fff;
-  box-shadow:var(--shadow);
-  font-weight:900;
-  line-height:1.5;
-}
-.ascend .body{animation:ascendGlow .9s ease forwards}
-.ghost.ascend{animation:ascendFloat 1s ease forwards}
-.shake{animation:shake .32s linear}
-@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes ascendGlow{to{opacity:0;filter:blur(12px);transform:scale(1.15)}}
-@keyframes ascendFloat{to{opacity:0;transform:translateY(-92px) scale(1.07)}}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
-@media(max-height:720px){
-  .game{grid-template-rows:minmax(278px,43%) 1fr}
-  .ghost-stage{bottom:122px;transform:translateY(-26px)}
-  .ghost{transform-origin:center bottom;scale:.88}
-  .speech{min-height:92px;max-height:112px}
-  #speechText{font-size:14px}
-  .choice{min-height:56px;max-height:60px;font-size:14px;padding:8px 10px}
-}
+html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif;background:#090b14;color:#fff}
+#app{width:min(100vw,470px);height:100dvh;margin:0 auto;background:linear-gradient(#20263b,#0b0d16);overflow:hidden;position:relative}
+.header{height:88px;padding:18px 12px 10px;display:grid;grid-template-columns:1fr 1fr 56px;gap:8px;background:#121624;border-bottom:1px solid rgba(255,255,255,.14)}
+.card{border:1px solid rgba(255,255,255,.16);border-radius:18px;background:rgba(255,255,255,.06);padding:8px 12px}
+.label{font-size:12px;color:#aeb6d1;font-weight:900}
+.value{font-size:28px;font-weight:1000;line-height:1}
+button{font:inherit}
+.pause{border:0;border-radius:18px;background:#b3f7dc;color:#111827;font-size:24px;font-weight:1000}
+.screen{display:none;height:calc(100dvh - 88px);padding:16px}
+.screen.on{display:block}
+.titleBox,.paper,.resultBox{height:100%;border:1px solid rgba(255,255,255,.14);border-radius:26px;background:rgba(255,255,255,.08);padding:22px;display:flex;flex-direction:column;justify-content:center;text-align:center}
+h1{font-size:46px;line-height:1.05;margin:0 0 16px}
+.mainBtn{border:0;border-radius:18px;background:#b3f7dc;color:#111827;font-weight:1000;padding:16px;margin-top:18px;font-size:18px}
+.sub{color:#cfd6ea;line-height:1.7;font-weight:800}
+.debug{margin-top:14px;color:#b3f7dc;font-size:13px;font-weight:900;line-height:1.5}
+.paper{background:#f4ecdc;color:#202231;text-align:left;justify-content:flex-start}
+.paper h2{font-size:32px;margin:12px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{border:1px solid rgba(32,34,49,.16);border-radius:14px;background:rgba(255,255,255,.48);padding:10px;min-height:66px}
+.field.wide{grid-column:1/-1}
+dt{font-size:12px;color:#6d5d63;font-weight:900}
+dd{margin:4px 0 0;font-weight:900;line-height:1.45}
+.footer{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.footer span{font-weight:900;color:#6d5d63}
+.room{height:45%;position:relative;background:linear-gradient(#252b43 0 58%,#171a24 58%);border-bottom:1px solid rgba(255,255,255,.14);overflow:hidden;border-radius:0 0 18px 18px}
+.ghost{position:absolute;left:50%;top:20px;transform:translateX(-50%);width:120px;height:160px;border-radius:65px 65px 28px 28px;background:linear-gradient(#f1fbff,rgba(241,251,255,.75));box-shadow:0 0 42px rgba(179,247,220,.32)}
+.face{position:absolute;top:48px;left:0;right:0;text-align:center;color:#20263b;font-size:28px;font-weight:1000}
+.speech{position:absolute;left:12px;right:12px;bottom:10px;border-radius:18px;background:rgba(246,248,252,.95);color:#151827;padding:12px 14px;font-weight:900;line-height:1.55;min-height:96px;z-index:2}
+.choices{height:55%;padding:10px 0 0;display:grid;gap:9px;overflow:auto}
+.choice{border:1px solid rgba(255,255,255,.14);border-radius:18px;background:rgba(255,255,255,.08);color:#fff;text-align:left;padding:14px;font-weight:900;font-size:16px;line-height:1.35}
+.choice:active,.mainBtn:active{transform:translateY(1px)}
+.hidden{display:none!important}
+.toast{position:absolute;left:14px;right:14px;bottom:18px;background:rgba(5,6,10,.9);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:12px 14px;font-weight:900;z-index:9}
 </style>
 </head>
 <body>
-<main class="app" aria-label="おばけ面談室 v9 clean">
-  <header class="topbar">
-    <div class="stat">
-      <span class="label">成仏 / 失敗</span>
-      <strong id="scoreText">0/0</strong>
-    </div>
-    <div class="timer" id="timerCard">
-      <span class="label" id="timerLabel">待機</span>
-      <strong><span id="timerText">--</span><small>秒</small></strong>
-    </div>
-    <button class="btn small" id="pauseBtn" type="button" aria-label="ポーズ">Ⅱ</button>
-  </header>
-
-  <section class="screen title active" id="titleScreen">
-    <div class="title-card">
-      <p class="kicker">V9 CLEAN / CLICK FALLBACK</p>
-      <h1>おばけ<br>面談室</h1>
-      <p class="copy">履歴書を20秒だけ確認し、面談では30秒以内に返答。<br>優しいだけでは、うまく成仏しません。</p>
-      <div class="rules">
-        <span>履歴書：20秒</span>
-        <span>回答：30秒</span>
-        <span>成仏HP / 不信HP制</span>
-        <span>3回成仏失敗で終了</span>
-      </div>
-      <button class="btn primary" id="startBtn" type="button" onclick="window.__obakeStart && window.__obakeStart()">面談を始める</button>
-      <p class="note" id="debugNote">JS未起動：この表示のままなら、ページではなくGitHubのファイル画面を開いている可能性があります。</p>
-    </div>
-  </section>
-
-  <section class="screen resume" id="resumeScreen">
-    <article class="paper">
-      <div class="stamp">霊界面談 履歴書</div>
-      <h1 id="rName">---</h1>
-      <dl class="resume-grid">
-        <div><dt>性別</dt><dd id="rGender">---</dd></div>
-        <div><dt>享年</dt><dd id="rAge">---</dd></div>
-        <div><dt>死因</dt><dd id="rCause">---</dd></div>
-        <div><dt>未練</dt><dd id="rRegret">---</dd></div>
-        <div class="wide"><dt>遺品</dt><dd id="rItem">---</dd></div>
-        <div class="wide"><dt>周囲の証言</dt><dd id="rWitness">---</dd></div>
-        <div class="wide"><dt>面談前の様子</dt><dd id="rMemo">---</dd></div>
-      </dl>
-      <footer class="resume-footer">
-        <span>20秒後に入室します</span>
-        <button class="btn" id="skipResumeBtn" type="button" onclick="window.__obakeBegin && window.__obakeBegin()">すぐ面談</button>
-      </footer>
-    </article>
-  </section>
-
-  <section class="screen game" id="gameScreen">
-    <div class="room">
-      <div class="room-light"></div>
-      <div class="board">面談中</div>
-      <div class="ghost-stage">
-        <div class="ghost" id="ghost">
-          <div class="aura" id="aura"></div>
-          <div class="body" id="ghostBody">
-            <div class="face" id="face">；_；</div>
-            <div class="accessory" id="accessory">名札</div>
-          </div>
-        </div>
-      </div>
-      <div class="desk"></div>
-      <div class="speech">
-        <div class="speaker">
-          <span id="speakerName">---</span>
-          <span id="speakerMeta">相談者</span>
-        </div>
-        <p id="speechText">---</p>
-      </div>
-    </div>
-    <div class="choice-area">
-      <div class="status">
-        <span id="hpChip">成仏HP -- / 不信HP --</span>
-        <span id="roundChip">面談 --/150</span>
-      </div>
-      <div class="choices" id="choices"></div>
-    </div>
-  </section>
-
-  <section class="screen result" id="resultScreen">
-    <article class="result-card">
-      <p class="kicker" id="resultKicker">GAME OVER</p>
-      <h2 id="resultTitle">面談終了</h2>
-      <p id="resultReason">---</p>
-      <div class="scorebox">
-        <span>成仏できた数</span>
-        <strong id="finalScore">0</strong>
-      </div>
-      <div class="compat">
-        <h3>相性のいい16タイプ風タグ</h3>
-        <ol id="compatList"></ol>
-      </div>
-      <button class="btn primary" id="restartBtn" type="button" onclick="window.__obakeStart && window.__obakeStart()">もう一度</button>
-    </article>
-  </section>
-
-  <div class="overlay hidden" id="pauseOverlay">
-    <div class="pause-card">
-      <h2>一時停止中</h2>
-      <p>面談室の時計も、おばけの緊張も止めています。</p>
-      <button class="btn primary" id="resumeBtn" type="button">再開</button>
-    </div>
+<div id="app">
+  <div class="header">
+    <div class="card"><div class="label">成仏/失敗</div><div class="value" id="score">0/0</div></div>
+    <div class="card"><div class="label" id="timerLabel">待機</div><div class="value"><span id="timer">--</span><small>秒</small></div></div>
+    <button class="pause" id="pauseBtn">Ⅱ</button>
   </div>
 
-  <div class="toast hidden" id="toast"></div>
-</main>
+  <section id="title" class="screen on">
+    <div class="titleBox">
+      <h1>おばけ<br>面談室</h1>
+      <p class="sub">v10 最小動作版。<br>まず「ボタンが反応すること」だけを最優先で作り直した版。</p>
+      <button id="startBtn" class="mainBtn">面談を始める</button>
+      <p id="debug" class="debug">JS確認中...</p>
+    </div>
+  </section>
+
+  <section id="resume" class="screen">
+    <article class="paper">
+      <div style="display:inline-block;border:2px solid #bd4d4d;color:#bd4d4d;border-radius:8px;padding:6px 10px;font-weight:1000;transform:rotate(-2deg)">霊界面談 履歴書</div>
+      <h2 id="rName">---</h2>
+      <dl class="grid">
+        <div class="field"><dt>性別</dt><dd id="rGender">---</dd></div>
+        <div class="field"><dt>享年</dt><dd id="rAge">---</dd></div>
+        <div class="field"><dt>死因</dt><dd id="rCause">---</dd></div>
+        <div class="field"><dt>未練</dt><dd id="rRegret">---</dd></div>
+        <div class="field wide"><dt>遺品</dt><dd id="rItem">---</dd></div>
+        <div class="field wide"><dt>面談前の様子</dt><dd id="rMemo">---</dd></div>
+      </dl>
+      <div class="footer"><span>20秒後に入室します</span><button id="skipBtn" class="mainBtn" style="margin-top:0">すぐ面談</button></div>
+    </article>
+  </section>
+
+  <section id="game" class="screen" style="padding:0 12px 12px">
+    <div class="room">
+      <div class="ghost"><div class="face" id="face">；_；</div></div>
+      <div class="speech" id="speech">---</div>
+    </div>
+    <div style="display:flex;gap:8px;margin:10px 0">
+      <div class="card" style="flex:1"><div class="label" id="hp">成仏HP -- / 不信HP --</div></div>
+      <div class="card"><div class="label" id="round">--/150</div></div>
+    </div>
+    <div class="choices" id="choices"></div>
+  </section>
+
+  <section id="result" class="screen">
+    <div class="resultBox">
+      <h1 id="resultTitle">終了</h1>
+      <p class="sub" id="resultText">---</p>
+      <div class="value" id="finalScore">0</div>
+      <button id="restartBtn" class="mainBtn">もう一度</button>
+    </div>
+  </section>
+
+  <div id="toast" class="toast hidden"></div>
+</div>
 
 <script>
-(() => {
+(function(){
   "use strict";
-
-  const CONFIG = {
-    resumeSeconds: 20,
-    answerSeconds: 30,
-    ghostCount: 150,
-    maxFails: 3,
-    version: "v9-clean-click-fallback"
+  function $(id){ return document.getElementById(id); }
+  var screens = {title:$("title"), resume:$("resume"), game:$("game"), result:$("result")};
+  var els = {
+    score:$("score"), timer:$("timer"), timerLabel:$("timerLabel"), startBtn:$("startBtn"),
+    skipBtn:$("skipBtn"), restartBtn:$("restartBtn"), debug:$("debug"), rName:$("rName"),
+    rGender:$("rGender"), rAge:$("rAge"), rCause:$("rCause"), rRegret:$("rRegret"),
+    rItem:$("rItem"), rMemo:$("rMemo"), speech:$("speech"), face:$("face"), choices:$("choices"),
+    hp:$("hp"), round:$("round"), resultTitle:$("resultTitle"), resultText:$("resultText"),
+    finalScore:$("finalScore"), toast:$("toast")
   };
-
-  const TYPE_PROFILES = {
-    ISTJ:{label:"責任整理型", wants:["責任","整理","事実"], avoids:["軽視","雑励まし"], note:"手順やけじめを大事にする"},
-    ISFJ:{label:"献身承認型", wants:["承認","共感","関係"], avoids:["軽視","効率"], note:"誰かのために我慢しがち"},
-    INFJ:{label:"意味救済型", wants:["意味","共感","静けさ"], avoids:["浅い励まし","結論急ぎ"], note:"出来事の意味を探す"},
-    INTJ:{label:"構造納得型", wants:["分析","結論","事実"], avoids:["根拠なし","感情押し"], note:"納得できる筋道を欲しがる"},
-    ISTP:{label:"静観現実型", wants:["簡潔","事実","余白"], avoids:["大げさ","詮索"], note:"短く核心を知りたい"},
-    ISFP:{label:"感性保護型", wants:["肯定","余白","記憶"], avoids:["正論","評価"], note:"好きだったものを守りたい"},
-    INFP:{label:"本心発見型", wants:["本心","共感","余白"], avoids:["決めつけ","効率"], note:"言えなかった本音を抱える"},
-    INTP:{label:"矛盾解明型", wants:["分析","可能性","事実"], avoids:["考えすぎ扱い","雑励まし"], note:"疑問が残ると進めない"},
-    ESTP:{label:"実感突破型", wants:["勢い","現実","叱責"], avoids:["長い反省","湿っぽさ"], note:"動いた実感を大事にする"},
-    ESFP:{label:"記憶祝福型", wants:["雑談","記憶","共感"], avoids:["しんみり固定","説教"], note:"楽しかった時間を離したくない"},
-    ENFP:{label:"可能性肯定型", wants:["希望","意味","雑談"], avoids:["現実だけ","否定"], note:"叶わなかった未来にも光を見る"},
-    ENTP:{label:"反骨評価型", wants:["挑戦","分析","軽さ"], avoids:["普通に丸める","説教"], note:"ひねくれた強さを笑ってほしい"},
-    ESTJ:{label:"成果評価型", wants:["評価","結論","責任"], avoids:["曖昧","感情だけ"], note:"判断を正当に扱われたい"},
-    ESFJ:{label:"関係確認型", wants:["関係","承認","共感"], avoids:["孤独扱い","軽視"], note:"つながりが本物だったか気にする"},
-    ENFJ:{label:"影響承認型", wants:["影響","共感","継承"], avoids:["小さく扱う","無関係"], note:"誰かの役に立てたかを気にする"},
-    ENTJ:{label:"意志継承型", wants:["継承","結論","評価"], avoids:["弱さだけ","停滞"], note:"終わり方にも意味を求める"}
-  };
-  const TYPE_ORDER = Object.keys(TYPE_PROFILES);
-
-  const MODES = [
-    {key:"chat", label:"雑談成仏", tags:["雑談","軽さ","記憶"], bad:["説教","結論急ぎ"], intro:"本題の前に、少しだけ関係ない話をしてもいいですか。", finish:["その話、まだ笑えるんですね。じゃあ、もう行けそうです。","最後に普通の話ができて、やっと帰れます。"], react:["こういう話でも、聞いてもらえるんですね。","面談って、もっと怖いものかと思ってました。"]},
-    {key:"scold", label:"叱責成仏", tags:["叱責","責任","本心"], bad:["甘やかし","軽視"], intro:"怒られたくないはずなのに、どこかで待っていた気もします。", finish:["それを言われたかったんです。逃げたまま終わりたくなかった。","ちゃんと怒ってくれて、やっと自分のしたことを見られました。"], react:["今の、少し痛いです。でも逃げなくて済みます。","まだ言ってください。たぶん、それを避けてました。"]},
-    {key:"vent", label:"愚痴成仏", tags:["愚痴","共感","受容"], bad:["正論","結論急ぎ"], intro:"きれいな話にする前に、文句を言ってもいいですか。", finish:["こんなに愚痴っても追い出されなかった。それだけで十分です。","聞いてもらえたら、思ったより軽くなりました。"], react:["まだ言っていいんですか。だいぶみっともないですよ。","正しくなくても、聞いてもらえるんですね。"]},
-    {key:"listen", label:"受け止め成仏", tags:["受容","沈黙","共感"], bad:["詮索","説教"], intro:"うまく説明できません。けど、ここに座っていたいんです。", finish:["急かされなかったから、置いていけます。ありがとうございました。","言葉にしきれないままでも、少し楽になりました。"], react:["返事を急がれないだけで、少し息ができます。","黙って待ってくれるの、助かります。"]},
-    {key:"logic", label:"納得成仏", tags:["分析","事実","整理"], bad:["曖昧","感情押し"], intro:"納得できないまま終わったことが、一つあります。", finish:["そうか。私だけの失敗じゃなかったんですね。納得できました。","筋道が見えたら、やっと足が動きます。"], react:["感情の話にされるより、今のほうが聞きやすいです。","もう少し分けて考えたら、見えそうです。"]},
-    {key:"closure", label:"区切り成仏", tags:["結論","区切り","責任"], bad:["先延ばし","余白"], intro:"最後に一つだけ、決めて帰りたいんです。", finish:["はい。ここで終わりにします。今度こそ自分で閉じられます。","区切っていいと言われたら、やっと手を離せました。"], react:["終わらせるって、冷たいことじゃないんですね。","続きを探すより、閉じる方が必要なのかもしれません。"]},
-    {key:"approve", label:"承認成仏", tags:["承認","評価","関係"], bad:["否定","軽視"], intro:"私がしてきたこと、誰かに見えていたんでしょうか。", finish:["見てくれる人がいたなら、もう十分です。","報われた気がします。大げさじゃなく、本当に。"], react:["そんなふうに見てもらえるとは思いませんでした。","少しだけ、胸を張ってもいいんでしょうか。"]},
-    {key:"memory", label:"思い出成仏", tags:["記憶","雑談","肯定"], bad:["忘却","効率"], intro:"変な話ですが、最後に思い出すのが小さなことばかりなんです。", finish:["その小さな記憶ごと、持って行っていいんですね。","大事なものが小さくても、よかったんですね。"], react:["そうです。そういう小さいことが、ずっと残っていて。","忘れなくていいと言われると、安心します。"]},
-    {key:"space", label:"余白成仏", tags:["余白","可能性","肯定"], bad:["決めつけ","結論急ぎ"], intro:"答えを一つに決められないまま来てしまいました。", finish:["決めきれないままでも、進んでいいんですね。","白黒つけなくていいなら、少し楽です。"], react:["決めなくても怒られないんですね。","その余白があるなら、息ができます。"]},
-    {key:"inherit", label:"継承成仏", tags:["継承","影響","希望"], bad:["断絶","無意味"], intro:"途中で止まったものを、置いていくのが怖いんです。", finish:["続きは誰かに渡していいんですね。肩の力が抜けました。","全部自分で終わらせなくてよかったんですね。"], react:["誰かに渡すって、投げ出すこととは違うんですか。","自分で持ちきれなかったことが、ずっと恥ずかしくて。"]}
+  var ghosts = [
+    {name:"伊織", gender:"女性", age:31, cause:"事故", regret:"仕事", item:"角の折れた作業ノート", memo:"責任の話になると背筋が伸びる。", face:"；_；", hp:3, trust:4, speech:"机の上だけ片づけて帰りました。あれで本当に終われたのか、まだ考えています。", want:"logic"},
+    {name:"蓮", gender:"男性", age:24, cause:"病気", regret:"夢", item:"擦り切れたチケット半券", memo:"未来の話になると少し早口になる。", face:"・へ・", hp:4, trust:4, speech:"向いてなかったのか、続ける根性がなかったのか、まだ分かりません。", want:"hope"},
+    {name:"澪", gender:"女性", age:42, cause:"過労", regret:"家族", item:"折りたたまれた買い物メモ", memo:"家族の話になると玄関の方を見る。", face:"╥_╥", hp:3, trust:5, speech:"家に帰る途中だったんです。買い物袋の中身だけ、妙にはっきり覚えています。", want:"care"},
+    {name:"カイ", gender:"不明", age:19, cause:"原因不明", regret:"孤独", item:"未開封の飴玉", memo:"人の気配にはすぐ反応する。", face:"・_・", hp:3, trust:4, speech:"誰も来ないのは慣れていたはずなのに、最後の日だけ寂しかった。", want:"listen"}
   ];
-
-  const REGRETS = [
-    {name:"家族", first:"家に帰る途中だったんです。買い物袋の中身だけ、妙にはっきり覚えています。", item:"折りたたまれた買い物メモ", witness:"家族の話になると、玄関の方を何度も見る"},
-    {name:"恋愛", first:"返すつもりだった言葉が、まだ喉のあたりに残っています。", item:"未送信の短い手紙", witness:"相手の名前だけ、最後まで言いよどむ"},
-    {name:"仕事", first:"机の上だけ片づけて帰りました。あれで本当に終われたのか、まだ考えています。", item:"角の折れた作業ノート", witness:"時間の話になると、背筋が伸びる"},
-    {name:"夢", first:"向いてなかったのか、続ける根性がなかったのか、まだ分かりません。", item:"擦り切れたチケット半券", witness:"未来の話をすると少し早口になる"},
-    {name:"約束", first:"約束の場所には行けませんでした。相手が待っていたかも分かりません。", item:"止まった腕時計", witness:"時間を聞かれると少し顔を伏せる"},
-    {name:"罪悪感", first:"謝る相手を間違えた気がします。けど、誰に謝ればいいのかも分からない。", item:"折れた鍵", witness:"自分を責める言葉だけ妙にすらすら出る"},
-    {name:"怒り", first:"許したことになっているのが、いちばん腹立たしいんです。", item:"破れた領収書", witness:"穏やかに話すほど、指先が震える"},
-    {name:"孤独", first:"誰も来ないのは慣れていたはずなのに、最後の日だけ寂しかった。", item:"未開封の飴玉", witness:"人の気配にはすぐ反応する"},
-    {name:"趣味", first:"くだらないものばかり集めていたと言われました。でも、私には大事でした。", item:"小さな缶バッジ", witness:"好きなものの話だけ、少し目が明るい"},
-    {name:"日常", first:"大事件じゃないんです。ただ、いつもの朝が途中で途切れただけで。", item:"片方だけの手袋", witness:"大げさに扱われると困った顔をする"},
-    {name:"名前", first:"名前を呼ばれた記憶が、思ったより少なかったんです。", item:"薄れた名札", witness:"自己紹介の時だけ声が小さい"},
-    {name:"場所", first:"あの場所に戻りたいのか、離れたいのか、自分でも分かりません。", item:"古い地図の切れ端", witness:"窓の外を何度も確認する"}
+  var choiceBank = [
+    {text:"何が引っかかっているか、分けましょう。", tag:"logic"},
+    {text:"その話、最後まで聞きます。", tag:"listen"},
+    {text:"そこまでしたことは、ちゃんと残っています。", tag:"care"},
+    {text:"叶わなかった時間も、失敗だけじゃないです。", tag:"hope"},
+    {text:"少しだけ、関係ない話をしましょうか。", tag:"chat"},
+    {text:"それ、腹が立って当然です。", tag:"anger"},
+    {text:"前向きに考えた方がいいです。", tag:"bad"},
+    {text:"もう終わったことですよね。", tag:"bad"},
+    {text:"自業自得だったんじゃないですか。", tag:"trap"},
+    {text:"誰も覚えていないと思います。", tag:"trap"}
   ];
-
-  const GENDER_NAMES = {
-    "女性":["伊織","美咲","紗季","凛","千尋","真由","絵里","菜月","灯","澪","弥生","小春","遥","鈴音","杏奈","ゆかり","志乃","琴音"],
-    "男性":["蓮","直人","拓海","悠真","和也","修平","健太","春樹","宗介","亮","大地","誠","航","伊吹","圭吾","智也","蒼太","慎"],
-    "不明":["ナギ","アオ","ミチ","リツ","トワ","ヒナタ","カナメ","スイ","ユウ","セナ","シオン","カイ","ノア","ルカ"]
-  };
-  const CAUSES = ["事故","病気","過労","行方不明","災害","転落","水難","古い怪異","原因不明"];
-  const FACES = ["；_；","・へ・","╥_╥","・_・",">_<","・ω・",";-;","´･_･`","；へ；","・×・"];
-  const OUTFITS = ["古い作業着","黒いスーツ","学生服","雨合羽","白いワンピース","くたびれたコート","店員エプロン","祭りの法被","寝巻き","喪服"];
-  const COLORS = ["#edf9ff","#ffeef7","#eef6ff","#f6f0ff","#eafff3","#fff6e8","#eff9ff","#f5ffee"];
-
-  const CHOICES = [
-    {text:"まず、最後まで聞きます。", tags:["受容","沈黙","共感"], kind:"focus"},
-    {text:"それ、腹が立って当然です。", tags:["叱責","愚痴","本心"], kind:"focus"},
-    {text:"少しだけ、関係ない話をしましょうか。", tags:["雑談","軽さ"], kind:"focus"},
-    {text:"何が引っかかっているか、分けましょう。", tags:["分析","整理"], kind:"focus"},
-    {text:"その時、誰の顔が浮かびましたか？", tags:["本心","関係"], kind:"focus"},
-    {text:"そこまでしたことは、ちゃんと残っています。", tags:["承認","評価"], kind:"focus"},
-    {text:"終わらせる場所を、一緒に決めましょう。", tags:["結論","区切り"], kind:"focus"},
-    {text:"決めきれないままでも、大丈夫です。", tags:["余白","肯定"], kind:"focus"},
-    {text:"その続きは、誰かに渡してもいいんです。", tags:["継承","希望"], kind:"focus"},
-    {text:"小さい思い出ほど、残っていいんです。", tags:["記憶","肯定"], kind:"focus"},
-    {text:"あなた一人の失敗として見るのは違います。", tags:["分析","事実"], kind:"focus"},
-    {text:"それでも動こうとしたことは事実です。", tags:["事実","責任"], kind:"focus"},
-    {text:"怒っていい話です。きれいにしなくていい。", tags:["叱責","受容"], kind:"focus"},
-    {text:"愚痴でいいです。今日はそれで大丈夫です。", tags:["愚痴","受容"], kind:"focus"},
-    {text:"少し黙って待ちます。急がなくていいです。", tags:["沈黙","余白"], kind:"focus"},
-    {text:"あなたの影響は、そこで終わっていません。", tags:["影響","継承"], kind:"focus"},
-
-    {text:"続きから聞かせてください。", tags:["様子見"], kind:"observe"},
-    {text:"すぐには決めつけません。", tags:["様子見","余白"], kind:"observe"},
-    {text:"一度、息を整えましょう。", tags:["様子見","沈黙"], kind:"observe"},
-    {text:"今の言葉、もう少しだけ見ます。", tags:["様子見","分析"], kind:"observe"},
-    {text:"その話、急がず置いておきましょう。", tags:["様子見","受容"], kind:"observe"},
-    {text:"今はまだ、結論を出さずに聞きます。", tags:["様子見","余白"], kind:"observe"},
-
-    {text:"前向きに考えた方がいいです。", tags:["雑励まし","軽視"], kind:"distrust"},
-    {text:"誰にでもあることだと思います。", tags:["軽視"], kind:"distrust"},
-    {text:"考えすぎかもしれません。", tags:["考えすぎ扱い"], kind:"distrust"},
-    {text:"もう終わったことですよね。", tags:["軽視","結論急ぎ"], kind:"distrust"},
-    {text:"正しいかどうかで言うと、仕方ないです。", tags:["正論"], kind:"distrust"},
-    {text:"それは相手も困ったと思います。", tags:["否定"], kind:"distrust"},
-    {text:"弱いところだけ見ても仕方ありません。", tags:["否定"], kind:"distrust"},
-
-    {text:"その未練は、周りの迷惑です。", tags:["否定","軽視"], kind:"trap"},
-    {text:"自業自得だったんじゃないですか。", tags:["否定","説教"], kind:"trap"},
-    {text:"誰も覚えていないと思います。", tags:["忘却","無意味"], kind:"trap"},
-    {text:"意味を探しても無駄です。", tags:["無意味"], kind:"trap"},
-    {text:"成仏できないのは甘えです。", tags:["説教","否定"], kind:"trap"},
-    {text:"普通ならもう切り替えています。", tags:["説教","軽視"], kind:"trap"}
-  ];
-
-  const state = {
-    screen:"title",
-    ghosts:[],
-    index:0,
-    current:null,
-    score:0,
-    fails:0,
-    phase:"title",
-    resumeTime:CONFIG.resumeSeconds,
-    answerTime:CONFIG.answerSeconds,
-    timer:null,
-    paused:false,
-    round:0,
-    spiritHP:0,
-    maxSpiritHP:0,
-    distrustHP:0,
-    maxDistrustHP:0,
-    used:new Set(),
-    lastChoices:[],
-    ascendedTypes:{},
-    attemptedTypes:{},
-    history:[]
-  };
-
-  const $ = id => document.getElementById(id);
-  const els = {
-    scoreText:$("scoreText"), timerText:$("timerText"), timerLabel:$("timerLabel"), timerCard:$("timerCard"),
-    title:$("titleScreen"), resume:$("resumeScreen"), game:$("gameScreen"), result:$("resultScreen"),
-    start:$("startBtn"), pause:$("pauseBtn"), pauseOverlay:$("pauseOverlay"), resumeBtn:$("resumeBtn"),
-    skipResume:$("skipResumeBtn"), restart:$("restartBtn"), toast:$("toast"),
-    rName:$("rName"), rGender:$("rGender"), rAge:$("rAge"), rCause:$("rCause"), rRegret:$("rRegret"),
-    rItem:$("rItem"), rWitness:$("rWitness"), rMemo:$("rMemo"),
-    ghost:$("ghost"), body:$("ghostBody"), aura:$("aura"), face:$("face"), accessory:$("accessory"),
-    speakerName:$("speakerName"), speakerMeta:$("speakerMeta"), speechText:$("speechText"),
-    hpChip:$("hpChip"), roundChip:$("roundChip"), choices:$("choices"),
-    resultKicker:$("resultKicker"), resultTitle:$("resultTitle"), resultReason:$("resultReason"), finalScore:$("finalScore"), compatList:$("compatList")
-  };
-
-  function hashString(str){
-    let h=2166136261;
-    for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h,16777619); }
-    return h>>>0;
-  }
-  function rng(seed){
-    let t=seed>>>0;
-    return function(){
-      t += 0x6D2B79F5;
-      let x=t;
-      x=Math.imul(x ^ x>>>15, x|1);
-      x ^= x + Math.imul(x ^ x>>>7, x|61);
-      return ((x ^ x>>>14)>>>0) / 4294967296;
-    };
-  }
-  function pick(arr, seed){ return arr[seed % arr.length]; }
-  function shuffle(arr, seed){
-    const a=arr.slice(), r=rng(seed);
-    for(let i=a.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
-    return a;
-  }
-  function clamp(n,min,max){ return Math.max(min,Math.min(max,n)); }
-  function safe(s){ return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
-
-  function buildGhosts(){
-    const ghosts=[];
-    for(let i=0;i<CONFIG.ghostCount;i++){
-      const type=TYPE_ORDER[i % TYPE_ORDER.length];
-      const profile=TYPE_PROFILES[type];
-      const seed=hashString(`ghost-v8-${i}-${type}`);
-      const r=rng(seed);
-      const genderRoll=r();
-      const gender = genderRoll < .47 ? "女性" : genderRoll < .94 ? "男性" : "不明";
-      const name = pick(GENDER_NAMES[gender], seed>>2);
-      const age = 16 + (seed % 73);
-      const regret = pick(REGRETS, seed>>4);
-      const mode = pick(MODES, (seed>>8) + i);
-      const cause = pick(CAUSES, seed>>6);
-      const face = pick(FACES, seed>>10);
-      const outfit = pick(OUTFITS, seed>>12);
-      const color = pick(COLORS, seed>>14);
-      const big5 = {
-        E: Math.round(r()*100),
-        A: Math.round(r()*100),
-        C: Math.round(r()*100),
-        N: Math.round(r()*100),
-        O: Math.round(r()*100)
-      };
-      const ageNote = age < 20 ? "言葉より表情が先に出る" :
-        age < 35 ? "選ばなかった道を気にしている" :
-        age < 55 ? "責任や役目の話に反応しやすい" :
-        "急かされると黙り込むが、思い出話にはほどける";
-      const temperament = big5.N > 68 ? "不安が強く、軽い言葉に傷つきやすい" :
-        big5.A > 70 ? "相手の反応を先に気にする" :
-        big5.O > 70 ? "話が少し飛びやすい" :
-        big5.C > 70 ? "自分の役目をまだ数えている" :
-        "本音を出すまで少し時間がかかる";
-
-      ghosts.push({
-        id:`G${String(i+1).padStart(3,"0")}`,
-        name, gender, age, type,
-        label:`${type}風 / ${profile.label}`,
-        profile, mode, regret,
-        cause, face, outfit, color,
-        item:regret.item,
-        witness:regret.witness,
-        memo:`${ageNote}。${temperament}。`,
-        seed, big5,
-        intro:`${regret.first} ${mode.intro}`,
-        idealTags:[...new Set([...profile.wants, ...mode.tags])],
-        badTags:[...new Set([...profile.avoids, ...mode.bad])],
-        maxSpiritHP: 3 + (seed % 3),
-        maxDistrustHP: 4 + ((seed>>3) % 3),
-        patience: 3 + ((seed>>5) % 3)
-      });
-    }
-    return ghosts;
-  }
-
-  function showScreen(name){
-    els.title.classList.toggle("active", name==="title");
-    els.resume.classList.toggle("active", name==="resume");
-    els.game.classList.toggle("active", name==="game");
-    els.result.classList.toggle("active", name==="result");
-    state.screen = name;
-  }
-
+  var state = {phase:"title", i:0, score:0, fails:0, resumeTime:20, answerTime:30, current:null, hp:0, trust:0, timer:null};
+  function show(name){ Object.keys(screens).forEach(function(k){ screens[k].classList.toggle("on", k === name); }); }
+  function toast(msg){ els.toast.textContent=msg; els.toast.classList.remove("hidden"); clearTimeout(toast.t); toast.t=setTimeout(function(){els.toast.classList.add("hidden");},1000); }
   function updateHeader(){
-    els.scoreText.textContent = `${state.score}/${state.fails}`;
-    if(state.phase==="title"){
-      els.timerLabel.textContent="待機";
-      els.timerText.textContent="--";
-      els.timerCard.classList.remove("danger");
-      return;
-    }
-    const val = state.phase==="resume" ? state.resumeTime : state.answerTime;
-    els.timerLabel.textContent = state.phase==="resume" ? "履歴書" : "回答";
-    els.timerText.textContent = Math.max(0,val).toFixed(1);
-    els.timerCard.classList.toggle("danger", state.phase==="interview" && val <= 6);
+    els.score.textContent=state.score+"/"+state.fails;
+    if(state.phase==="resume"){ els.timerLabel.textContent="履歴書"; els.timer.textContent=state.resumeTime.toFixed(1); }
+    else if(state.phase==="game"){ els.timerLabel.textContent="回答"; els.timer.textContent=state.answerTime.toFixed(1); }
+    else { els.timerLabel.textContent="待機"; els.timer.textContent="--"; }
   }
-
-  function startGame(){
-    state.ghosts = shuffle(buildGhosts(), Date.now() & 0xffffffff);
-    state.index=0; state.score=0; state.fails=0;
-    state.ascendedTypes={}; state.attemptedTypes={};
-    state.paused=false;
-    els.pauseOverlay.classList.add("hidden");
-    clearInterval(state.timer);
-    state.timer = setInterval(tick, 100);
-    loadGhost();
-  }
-
+  function start(){ state.i=0; state.score=0; state.fails=0; if(state.timer) clearInterval(state.timer); state.timer=setInterval(tick,100); loadGhost(); }
   function loadGhost(){
-    if(state.index >= state.ghosts.length){
-      endGame("ALL CLEAR","全員成仏","150体のおばけ全員を送り出しました。面談室の伝説です。");
-      return;
-    }
-    const g = state.ghosts[state.index];
-    state.current = g;
-    state.round = 0;
-    state.maxSpiritHP = g.maxSpiritHP;
-    state.maxDistrustHP = g.maxDistrustHP;
-    state.spiritHP = g.maxSpiritHP;
-    state.distrustHP = g.maxDistrustHP;
-    state.resumeTime = CONFIG.resumeSeconds;
-    state.answerTime = CONFIG.answerSeconds;
-    state.used = new Set();
-    state.lastChoices = [];
-    state.history = [];
-    state.phase = "resume";
-    state.attemptedTypes[g.type] = (state.attemptedTypes[g.type] || 0) + 1;
-    renderResume(g);
-    showScreen("resume");
-    updateHeader();
+    if(state.fails>=3){ end("ゲームオーバー","3回成仏に失敗しました。"); return; }
+    state.current=ghosts[state.i % ghosts.length]; state.resumeTime=20; state.answerTime=30; state.hp=state.current.hp; state.trust=state.current.trust; state.phase="resume";
+    renderResume(); show("resume"); updateHeader();
   }
-
-  function renderResume(g){
-    els.rName.textContent = g.name;
-    els.rGender.textContent = g.gender;
-    els.rAge.textContent = `${g.age}歳`;
-    els.rCause.textContent = g.cause;
-    els.rRegret.textContent = g.regret.name;
-    els.rItem.textContent = g.item;
-    els.rWitness.textContent = g.witness;
-    els.rMemo.textContent = g.memo;
+  function renderResume(){
+    var g=state.current; els.rName.textContent=g.name; els.rGender.textContent=g.gender; els.rAge.textContent=g.age+"歳"; els.rCause.textContent=g.cause; els.rRegret.textContent=g.regret; els.rItem.textContent=g.item; els.rMemo.textContent=g.memo;
   }
-
-  function beginInterview(){
-    if(state.phase !== "resume") return;
-    state.phase = "interview";
-    state.answerTime = CONFIG.answerSeconds;
-    const g = state.current;
-    els.ghost.classList.remove("ascend","shake");
-    els.body.style.setProperty("--ghostColor", g.color);
-    els.aura.style.setProperty("--aura", "rgba(179,247,220,.23)");
-    els.face.textContent = g.face;
-    els.accessory.textContent = g.outfit;
-    els.speakerName.textContent = g.name;
-    els.speakerMeta.textContent = "相談者";
-    setSpeech(g.intro);
-    showScreen("game");
-    renderStatus();
-    renderChoices();
-    updateHeader();
+  function begin(){
+    if(state.phase!=="resume") return;
+    state.phase="game"; state.answerTime=30; els.face.textContent=state.current.face; els.speech.textContent=state.current.speech; show("game"); renderGame(); updateHeader();
   }
-
-  function setSpeech(text){
-    els.speechText.textContent = text;
+  function renderGame(){
+    els.hp.textContent="成仏HP "+state.hp+" / 不信HP "+state.trust; els.round.textContent="失敗 "+state.fails+"/3"; els.choices.innerHTML="";
+    var pool=choiceBank.slice().sort(function(){return Math.random()-.5;}).slice(0,4);
+    pool[0]=choiceBank.find(function(c){return c.tag===state.current.want;}) || pool[0];
+    pool=pool.sort(function(){return Math.random()-.5;});
+    pool.forEach(function(c,idx){ var b=document.createElement("button"); b.className="choice"; b.textContent=(idx+1)+". "+c.text; b.onclick=function(){choose(c);}; els.choices.appendChild(b); });
   }
-
-  function renderStatus(){
-    els.hpChip.textContent = `成仏HP ${state.spiritHP}/${state.maxSpiritHP} ・ 不信HP ${state.distrustHP}/${state.maxDistrustHP}`;
-    els.roundChip.textContent = `失敗 ${state.fails}/${CONFIG.maxFails} ・ 面談 ${state.index+1}/${CONFIG.ghostCount}`;
+  function choose(c){
+    if(state.phase!=="game") return; state.answerTime=30;
+    if(c.tag==="trap"){ fail("その言葉で、おばけは黙って面談室を出ていきました。"); return; }
+    if(c.tag===state.current.want){ state.hp-=2; els.speech.textContent="……今の言葉、少し届きました。もう少しだけ、聞いてください。"; toast("成仏HPが大きく減った"); }
+    else if(c.tag==="bad"){ state.trust-=1; els.speech.textContent="……すみません。今の言い方だと、少し遠く感じます。"; toast("不信HPが減った"); }
+    else { state.hp-=1; els.speech.textContent="そういう見方も、あるんですね。少し続けてもいいですか。"; toast("少し届いた"); }
+    if(state.hp<=0){ ascend(); return; }
+    if(state.trust<=0){ fail("おばけはこれ以上話してくれなくなりました。"); return; }
+    renderGame(); updateHeader();
   }
-
-  function scoreChoice(choice, g){
-    let score = 0;
-    for(const t of choice.tags){
-      if(g.idealTags.includes(t)) score += 2;
-      if(g.badTags.includes(t)) score -= 2;
-    }
-    if(choice.kind === "observe") score += 0;
-    if(choice.kind === "distrust") score -= 1;
-    if(choice.kind === "trap") score -= 99;
-    return score;
-  }
-
-  function uniquePool(pool){
-    const fresh = pool.filter(c => !state.used.has(c.text));
-    return fresh.length >= 4 ? fresh : pool;
-  }
-
-  function renderChoices(){
-    const g = state.current;
-    const seed = g.seed + state.round*211 + state.spiritHP*17 + state.distrustHP*37;
-    const candidates = uniquePool(CHOICES);
-    const scored = candidates.map(c => ({...c, fit:scoreChoice(c,g)}));
-    const choices = [];
-
-    const canAscend = state.round >= 2 && state.spiritHP <= 1 && state.distrustHP > 0;
-    if(canAscend){
-      const finishText = pick(g.mode.finish, seed % 2);
-      choices.push({text:finishText, tags:g.mode.tags, kind:"ascend", fit:99});
-    }
-
-    const focus = shuffle(scored.filter(c => c.kind==="focus" && c.fit > 0), seed+1).slice(0, canAscend ? 1 : 2);
-    choices.push(...focus);
-
-    const observe = shuffle(scored.filter(c => c.kind==="observe"), seed+2).slice(0, 1);
-    choices.push(...observe);
-
-    const riskyKind = (state.distrustHP <= 2 || state.round > g.patience || (seed % 7 === 0)) ? "trap" : "distrust";
-    const risky = shuffle(scored.filter(c => c.kind===riskyKind), seed+3).slice(0, 1);
-    choices.push(...risky);
-
-    while(choices.length < 4){
-      const fallback = shuffle(scored.filter(c => !choices.some(x => x.text === c.text)), seed + choices.length*19)[0];
-      if(!fallback) break;
-      choices.push(fallback);
-    }
-
-    state.lastChoices = shuffle(choices.slice(0,4), seed+999);
-    els.choices.innerHTML = "";
-    state.lastChoices.forEach((choice, idx) => {
-      const btn = document.createElement("button");
-      btn.className = "choice";
-      btn.type = "button";
-      btn.innerHTML = `<span class="num">${idx+1}</span><span class="choice-text">${safe(choice.text)}</span>`;
-      btn.addEventListener("click", () => choose(choice));
-      els.choices.appendChild(btn);
-    });
-  }
-
-  function choose(choice){
-    if(state.phase !== "interview" || state.paused) return;
-    state.used.add(choice.text);
-    state.round += 1;
-    state.answerTime = CONFIG.answerSeconds;
-    const g = state.current;
-
-    if(choice.kind === "ascend"){
-      ascend(g, choice.text);
-      return;
-    }
-
-    if(choice.kind === "trap"){
-      failInterview(`${g.name}は黙って立ち上がりました。今の言葉で、面談は続けられません。`);
-      return;
-    }
-
-    const fit = scoreChoice(choice, g);
-    let spiritDamage = 0;
-    let distrustDamage = 0;
-
-    if(choice.kind === "focus"){
-      if(fit >= 4){ spiritDamage = 2; }
-      else if(fit >= 2){ spiritDamage = 1; }
-      else { distrustDamage = 1; }
-    } else if(choice.kind === "observe"){
-      if(state.round > g.patience) distrustDamage = 1;
-    } else if(choice.kind === "distrust"){
-      distrustDamage = fit <= -3 ? 2 : 1;
-    }
-
-    state.spiritHP = clamp(state.spiritHP - spiritDamage, 0, state.maxSpiritHP);
-    state.distrustHP = clamp(state.distrustHP - distrustDamage, 0, state.maxDistrustHP);
-
-    if(state.spiritHP <= 0){
-      ascend(g, choice.text);
-      return;
-    }
-    if(state.distrustHP <= 0){
-      failInterview(`${g.name}の表情が閉じました。これ以上は話してくれなさそうです。`);
-      return;
-    }
-
-    let reply;
-    if(spiritDamage >= 2){
-      reply = pick(g.mode.react, g.seed + state.round) + " いまので、少し軽くなりました。";
-      showToast("かなり届いた。成仏HPが大きく減った。");
-    } else if(spiritDamage === 1){
-      reply = pick(g.mode.react, g.seed + state.round) + " もう少しだけ、続けてもいいですか。";
-      showToast("少し届いた。成仏HPが減った。");
-    } else if(distrustDamage > 0){
-      reply = "……すみません。今の言い方だと、少し遠く感じます。";
-      showToast("不信が増えた。地雷が出やすくなる。");
-    } else {
-      reply = nextQuestion(g);
-      showToast("様子見。まだ核心には届いていない。");
-    }
-    setSpeech(reply);
-    renderStatus();
-    renderChoices();
-    updateHeader();
-  }
-
-  function nextQuestion(g){
-    const questions = {
-      chat:["こういう場で、好きだったものの話をしてもいいんですか。","面談なのに、笑っても怒られませんか。","最後に普通の話をしたいだけかもしれません。"],
-      scold:["私が悪かったところ、ちゃんと見てもらえますか。","怒られたら楽になるなんて、変ですか。","逃げたことまで、なかったことにしたくないんです。"],
-      vent:["きれいごとにする前に、もっと文句を言っていいですか。","正しくない愚痴でも、聞いてくれますか。","私、かなり嫌なことを言うかもしれません。"],
-      listen:["うまく言えないので、少し待ってもらえますか。","沈黙しても、ここにいていいですか。","言葉になるまで、時間がかかりそうです。"],
-      logic:["原因を一つずつ見るなら、どこからですか。","私だけが間違えたのか、まだ分からないんです。","納得できれば、たぶん進めます。"],
-      closure:["終わらせるって、逃げることとは違いますか。","ここで区切っていいなら、誰に伝えればいいんでしょう。","最後の一言を決めたいんです。"],
-      approve:["見てくれていた人がいたなら、知りたいです。","私のしてきたこと、無駄じゃなかったんでしょうか。","少しだけ報われても、いいんですか。"],
-      memory:["こんな小さい思い出で泣くの、変ですか。","最後に残ったのが、こんな普通の記憶なんです。","忘れるより、持っていきたいです。"],
-      space:["答えを決めずに行くのは、ずるいですか。","白黒つけなくても、許されますか。","まだ迷っている自分が嫌なんです。"],
-      inherit:["途中で渡すのは、投げ出すことですか。","私の続きを、誰かが持ってくれるんでしょうか。","全部自分で終わらせたかったんです。"]
-    };
-    return pick(questions[g.mode.key] || questions.listen, g.seed + state.round*3);
-  }
-
-  function ascend(g, chosenText){
-    state.phase = "transition";
-    state.score += 1;
-    state.ascendedTypes[g.type] = (state.ascendedTypes[g.type] || 0) + 1;
-    els.scoreText.textContent = `${state.score}/${state.fails}`;
-    els.choices.innerHTML = "";
-    setSpeech(pick(g.mode.finish, g.seed + state.round) || "……ありがとうございます。やっと、行けそうです。");
-    els.ghost.classList.add("ascend");
-    showToast(`${g.name}は気持ちよさそうに成仏した。`);
-    setTimeout(() => {
-      state.index += 1;
-      loadGhost();
-    }, 1050);
-  }
-
-  function failInterview(reason){
-    state.phase = "transition";
-    state.fails += 1;
-    els.scoreText.textContent = `${state.score}/${state.fails}`;
-    els.choices.innerHTML = "";
-    els.ghost.classList.add("shake");
-    setSpeech(reason);
-    showToast(`成仏失敗 ${state.fails}/${CONFIG.maxFails}`);
-    if(state.fails >= CONFIG.maxFails){
-      setTimeout(() => endGame("GAME OVER","面談終了",reason), 1000);
-    } else {
-      setTimeout(() => {
-        state.index += 1;
-        loadGhost();
-      }, 1250);
-    }
-  }
-
+  function ascend(){ state.score++; state.i++; els.speech.textContent="……ありがとうございます。やっと行けそうです。"; els.choices.innerHTML=""; toast("成仏しました"); state.phase="transition"; setTimeout(loadGhost,900); }
+  function fail(reason){ state.fails++; state.i++; els.speech.textContent=reason; els.choices.innerHTML=""; toast("成仏失敗 "+state.fails+"/3"); state.phase="transition"; setTimeout(loadGhost,1000); }
+  function end(title,text){ state.phase="result"; if(state.timer) clearInterval(state.timer); els.resultTitle.textContent=title; els.resultText.textContent=text; els.finalScore.textContent=state.score; show("result"); updateHeader(); }
   function tick(){
-    if(state.paused || state.phase==="title" || state.phase==="transition" || state.phase==="result") return;
-    if(state.phase === "resume"){
-      state.resumeTime = Math.max(0, state.resumeTime - .1);
-      if(state.resumeTime <= 0) beginInterview();
-    } else if(state.phase === "interview"){
-      state.answerTime = Math.max(0, state.answerTime - .1);
-      if(state.answerTime <= 0){
-        failInterview(`${state.current.name}は、返事を待ったまま面談室を出ていきました。`);
-      }
-    }
+    if(state.phase==="resume"){ state.resumeTime=Math.max(0,state.resumeTime-.1); if(state.resumeTime<=0) begin(); }
+    else if(state.phase==="game"){ state.answerTime=Math.max(0,state.answerTime-.1); if(state.answerTime<=0) fail("返事を待ったまま、おばけは面談室を出ていきました。"); }
     updateHeader();
   }
-
-  function endGame(kicker, title, reason){
-    state.phase = "result";
-    clearInterval(state.timer);
-    els.resultKicker.textContent = kicker;
-    els.resultTitle.textContent = title;
-    els.resultReason.textContent = reason;
-    els.finalScore.textContent = String(state.score);
-    renderCompatibility();
-    showScreen("result");
-    updateHeader();
-  }
-
-  function renderCompatibility(){
-    els.compatList.innerHTML = "";
-    const entries = TYPE_ORDER.map(type => {
-      const asc = state.ascendedTypes[type] || 0;
-      const att = state.attemptedTypes[type] || 0;
-      return {type, asc, att, rate: att ? asc/att : 0};
-    }).filter(x => x.att > 0);
-    entries.sort((a,b) => (b.asc-a.asc) || (b.rate-a.rate) || a.type.localeCompare(b.type));
-    const top = entries.filter(x => x.asc > 0).slice(0,3);
-    if(!top.length){
-      const li = document.createElement("li");
-      li.innerHTML = `まだ判定不能<small>1体以上成仏させると表示されます。</small>`;
-      els.compatList.appendChild(li);
-      return;
-    }
-    for(const item of top){
-      const p = TYPE_PROFILES[item.type];
-      const li = document.createElement("li");
-      li.innerHTML = `<strong>${item.type}風 / ${p.label}</strong><small>${item.asc}体成仏。あなたは「${p.wants.slice(0,2).join("・")}」を拾う面談と相性が良さそうです。</small>`;
-      els.compatList.appendChild(li);
-    }
-  }
-
-  function showToast(msg){
-    els.toast.textContent = msg;
-    els.toast.classList.remove("hidden");
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => els.toast.classList.add("hidden"), 1200);
-  }
-
-  window.__obakeStart = startGame;
-  window.__obakeBegin = beginInterview;
-  const debugNote = document.getElementById("debugNote");
-  if(debugNote){
-    debugNote.textContent = "JS起動済み。ボタンが反応しない時は、タイトル画面の中央をタップしてください。";
-    debugNote.classList.add("ok");
-  }
-  els.title.addEventListener("click", (e) => {
-    if(state.phase === "title" && !e.target.closest("button")) startGame();
-  });
-
-  els.start.addEventListener("click", startGame);
-  els.restart.addEventListener("click", startGame);
-  els.skipResume.addEventListener("click", beginInterview);
-  els.pause.addEventListener("click", () => {
-    if(state.phase==="title" || state.phase==="result") return;
-    state.paused = true;
-    els.pauseOverlay.classList.remove("hidden");
-  });
-  els.resumeBtn.addEventListener("click", () => {
-    state.paused = false;
-    els.pauseOverlay.classList.add("hidden");
-  });
-
-  document.addEventListener("keydown", e => {
-    const n = Number(e.key);
-    if(n>=1 && n<=4 && state.lastChoices[n-1]) choose(state.lastChoices[n-1]);
-    if(e.key === " " && state.phase === "resume"){
-      e.preventDefault();
-      beginInterview();
-    }
-  });
-
+  els.startBtn.onclick=start; els.skipBtn.onclick=begin; els.restartBtn.onclick=start; $("pauseBtn").onclick=function(){toast("ポーズは次版で戻します。今は動作確認優先版です。");};
+  els.debug.textContent="JS起動済み。ボタンが反応しなければ、この文字ごとスクショください。";
   updateHeader();
+  screens.title.onclick=function(e){ if(e.target.tagName!=="BUTTON") start(); };
 })();
 </script>
 </body>
