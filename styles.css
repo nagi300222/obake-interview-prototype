@@ -60,17 +60,6 @@ button { font: inherit; }
 .timer-card.danger { border-color: rgba(255,111,145,0.75); background: rgba(255,111,145,0.12); }
 .stat-label { color: var(--muted); font-size: 11px; letter-spacing: .08em; }
 .stat-card strong, .timer-card strong { font-size: 22px; }
-
-.score-pair {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-}
-.score-pair small {
-  font-size: 14px;
-  color: var(--muted);
-}
-#failures { color: var(--warn); }
 .timer-card small { font-size: 12px; color: var(--muted); margin-left: 2px; }
 
 .ghost-button {
@@ -365,6 +354,33 @@ dd { margin: 4px 0 0; font-weight: 800; line-height: 1.5; }
   margin-bottom: 6px;
 }
 #ghostSpeech { margin: 0; line-height: 1.55; font-weight: 800; font-size: 15px; }
+
+.dialogue-log {
+  margin-top: 8px;
+  max-height: 78px;
+  overflow-y: auto;
+  display: grid;
+  gap: 4px;
+  padding-right: 2px;
+}
+.dialogue-line {
+  font-size: 11px;
+  line-height: 1.35;
+  color: #555d72;
+  background: rgba(255,255,255,0.55);
+  border-radius: 10px;
+  padding: 5px 7px;
+}
+.dialogue-line .who {
+  font-weight: 900;
+  color: #282d3c;
+}
+.dialogue-line.user {
+  background: rgba(183,247,219,0.28);
+}
+.dialogue-line.ghost {
+  background: rgba(255,255,255,0.65);
+}
 
 .choices-panel {
   padding: 10px 12px calc(14px + env(safe-area-inset-bottom));
