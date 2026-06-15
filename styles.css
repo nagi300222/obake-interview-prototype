@@ -247,14 +247,15 @@ dd { margin: 4px 0 0; font-weight: 800; line-height: 1.5; }
 }
 .ghost-stage {
   position: absolute;
-  inset: 8px 0 76px;
+  inset: 0 0 136px;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
 }
 .ghost-figure {
   width: 150px;
   height: 205px;
+  margin-top: 8px;
   position: relative;
   display: flex;
   align-items: flex-end;
@@ -327,7 +328,7 @@ dd { margin: 4px 0 0; font-weight: 800; line-height: 1.5; }
   left: 12px;
   right: 12px;
   bottom: 12px;
-  min-height: 92px;
+  min-height: 104px;
   border-radius: 18px;
   padding: 12px 14px;
   background: rgba(246,247,251,0.93);
@@ -354,33 +355,6 @@ dd { margin: 4px 0 0; font-weight: 800; line-height: 1.5; }
   margin-bottom: 6px;
 }
 #ghostSpeech { margin: 0; line-height: 1.55; font-weight: 800; font-size: 15px; }
-
-.dialogue-log {
-  margin-top: 8px;
-  max-height: 78px;
-  overflow-y: auto;
-  display: grid;
-  gap: 4px;
-  padding-right: 2px;
-}
-.dialogue-line {
-  font-size: 11px;
-  line-height: 1.35;
-  color: #555d72;
-  background: rgba(255,255,255,0.55);
-  border-radius: 10px;
-  padding: 5px 7px;
-}
-.dialogue-line .who {
-  font-weight: 900;
-  color: #282d3c;
-}
-.dialogue-line.user {
-  background: rgba(183,247,219,0.28);
-}
-.dialogue-line.ghost {
-  background: rgba(255,255,255,0.65);
-}
 
 .choices-panel {
   padding: 10px 12px calc(14px + env(safe-area-inset-bottom));
@@ -535,6 +509,6 @@ dd { margin: 4px 0 0; font-weight: 800; line-height: 1.5; }
   .app-shell { min-height: 100dvh; }
   .ghost-figure { transform: scale(.88); transform-origin: bottom center; }
   .choice-button { height: 56px; min-height: 56px; max-height: 56px; font-size: 14px; padding: 8px 10px; }
-  .speech-panel { min-height: 78px; }
+  .speech-panel { min-height: 86px; }
   #ghostSpeech { font-size: 14px; }
 }
