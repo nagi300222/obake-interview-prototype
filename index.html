@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>おばけ面談室 v25</title>
+<title>おばけ面談室 v26</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif;background:#090b14;color:#fff}
@@ -76,7 +76,7 @@ dd{margin:4px 0 0;font-weight:900;line-height:1.45}
   <section id="title" class="screen on">
     <div class="titleBox">
       <h1>おばけ<br>面談室</h1>
-      <p class="sub">v25：具体相談＋性格差＋HP段階非表示＋ズレ反応強化版。<br>会話の中身とズレ反応から、おばけに合う聞き方を読む。</p>
+      <p class="sub">v26：150体濃縮・個性差拡大・文章校正版。<br>同じ悩みでも、別人に見えることを優先。</p>
       <button id="startBtn" class="mainBtn">面談を始める</button>
       <p id="debug" class="debug">JS確認中...</p>
       <p class="sub" style="font-size:12px;margin-top:10px">具体相談 / 良いけど違う反応 / 圧耐性 / 連打減衰 / HP段階非表示</p>
@@ -141,7 +141,8 @@ function hash(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i)
 function rng(seed){var t=seed>>>0;return function(){t+=0x6D2B79F5;var x=t;x=Math.imul(x^x>>>15,x|1);x^=x+Math.imul(x^x>>>7,x|61);return ((x^x>>>14)>>>0)/4294967296}}
 function pick(a,n){return a[Math.abs(n)%a.length]}
 function shuffle(a,seed){a=a.slice();var r=rng(seed);for(var i=a.length-1;i>0;i--){var j=Math.floor(r()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
-function safe(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]})}
+function safe(s){return String(s).replace(/[&<>"\']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","\'":"&#39;"}[c]})}
+function joinClean(parts){return parts.filter(Boolean).join(" ").replace(/\s+/g," ").replace(/。\s*。/g,"。").replace(/(です。)\s*です。/g,"です。").trim()}
 
 var screens={title:$("title"),resume:$("resume"),game:$("game"),result:$("result")};
 var els={
@@ -153,7 +154,7 @@ var els={
  finalScore:$("finalScore"),toast:$("toast"),log:$("log"),compat:$("compat"),
  pauseBtn:$("pauseBtn"),pauseOverlay:$("pauseOverlay"),resumeBtn:$("resumeBtn")
 };
-var CONFIG={resumeTime:20,answerTime:30,maxFails:3,ghostCount:240,version:"v25"};
+var CONFIG={resumeTime:20,answerTime:30,maxFails:3,ghostCount:150,version:"v26"};
 
 var maleNames=["蓮","直人","拓海","悠真","和也","修平","健太","春樹","宗介","亮","大地","誠","航","伊吹","圭吾","智也","蒼太","慎"];
 var femaleNames=["伊織","美咲","紗季","凛","千尋","真由","絵里","菜月","灯","澪","弥生","小春","遥","鈴音","杏奈","ゆかり","志乃","琴音"];
@@ -181,6 +182,25 @@ var typeProfiles={
  ENTJ:{want:"inherit",style:"firm",prefer:["継承","結論","評価"],sample:"途中で止まったものを、どう扱えばいいのか知りたいです。"}
 };
 
+
+var voicePacks=[
+ {id:"order",label:"手順で考える人",want:"logic",opener:"順番に話します。",memo:"説明の順番が崩れると、少し言葉を止める。",style:"formal"},
+ {id:"caretaker",label:"相手優先の人",want:"care",opener:"私の話で時間を取ってしまって、すみません。",memo:"自分の話なのに、先に誰かの心配をする。",style:"soft"},
+ {id:"quiet",label:"言葉を探す人",want:"listen",opener:"うまく言えないんですけど。",memo:"質問されると、答える前に長く黙る。",style:"quiet"},
+ {id:"dry",label:"感情を横に置く人",want:"logic",opener:"感情の話にすると、たぶんズレます。",memo:"慰められると、少し首をかしげる。",style:"dry"},
+ {id:"short",label:"短く話す人",want:"listen",opener:"長い話は苦手です。",memo:"短い返事のあと、表情だけ変わる。",style:"short"},
+ {id:"sensory",label:"感覚で覚えている人",want:"memory",opener:"変なところだけ覚えてます。",memo:"物や景色の話になると急に具体的になる。",style:"sensory"},
+ {id:"round",label:"本音が遠い人",want:"listen",opener:"変な話かもしれません。",memo:"核心に近づくと、別の話題に逃げる。",style:"roundabout"},
+ {id:"questioner",label:"考え続ける人",want:"logic",opener:"一つだけ、引っかかってます。",memo:"納得できない点だけ、何度も戻ってくる。",style:"question"},
+ {id:"rough",label:"怒りを隠さない人",want:"anger",opener:"いや、別に泣きに来たわけじゃないです。",memo:"笑っているが、言葉の端が荒い。",style:"rough"},
+ {id:"bright",label:"明るく逃げる人",want:"chat",opener:"本題の前に、どうでもいい話していいですか。",memo:"重い話になると、すぐ冗談を挟む。",style:"bright"},
+ {id:"spark",label:"未来を捨てきれない人",want:"hope",opener:"まだ、続きがあった気がするんです。",memo:"未来の話になると、声が少し明るくなる。",style:"jump"},
+ {id:"irony",label:"ひねくれた人",want:"chat",opener:"面談って時点で、だいぶ変ですけど。",memo:"まじめに扱われるほど、皮肉が増える。",style:"irony"},
+ {id:"direct",label:"区切りたい人",want:"closure",opener:"結論から言います。",memo:"曖昧な返事に、すぐ反応する。",style:"direct"},
+ {id:"warm",label:"誰かに残したい人",want:"inherit",opener:"誰かに届いていたなら、少し救われます。",memo:"自分のことより、残された人の話をする。",style:"warm"},
+ {id:"guilty",label:"責められたい人",want:"scold",opener:"優しくされると、逃げたみたいで苦しいです。",memo:"慰められるほど、視線が落ちる。",style:"firm"}
+];
+
 var regrets=[
  {name:"家族",item:"折りたたまれた買い物メモ",baseWant:"care"},
  {name:"仕事",item:"角の折れた作業ノート",baseWant:"logic"},
@@ -197,45 +217,66 @@ var regrets=[
 var cases={
  家族:[
   {surface:"最後の日、スーパーで安い豆腐を買いました。",detail:"メモには“牛乳、卵、豆腐”って書いてあって、豆腐だけ丸で囲んでました。",core:"帰ったら、いつもみたいに味噌汁を作るつもりだったんです。",ask:"帰れなかっただけなのに、約束を破ったみたいに残っています。",object:"買い物メモ"},
-  {surface:"弟に合鍵を渡す予定でした。",detail:"階段の踊り場で、鍵をポケットに入れ直したところまでは覚えています。",core:"渡せなかっただけなのに、置いていったみたいで。",ask:"あの子、困ってなかったでしょうか。",object:"合鍵"}
+  {surface:"弟に合鍵を渡す予定でした。",detail:"階段の踊り場で、鍵をポケットに入れ直したところまでは覚えています。",core:"渡せなかっただけなのに、置いていったみたいで。",ask:"あの子、困ってなかったでしょうか。",object:"合鍵"},
+  {surface:"子どもの体操服を洗濯機に入れたままでした。",detail:"朝には乾かすつもりで、ハンガーも出していました。",core:"小さいことなのに、そこだけずっと気になります。",ask:"最後まで世話を焼きたかったんだと思います。",object:"体操服"},
+  {surface:"父に電話をかけ直すつもりでした。",detail:"着信だけ残っていて、折り返す前に夜になりました。",core:"たいした用事じゃなかったかもしれない。でも、声を聞かなかったことが残っています。",ask:"今さらでも、気にしてたって言っていいんでしょうか。",object:"着信履歴"}
  ],
  仕事:[
   {surface:"最後の日、机の上に付箋を3枚残しました。",detail:"“請求書”“鍵”“山田さんに電話”って書きました。",core:"鍵のことだけ、誰にも伝えられてないんです。",ask:"これ、どこまで私の責任だったんでしょうか。",object:"付箋"},
-  {surface:"帰る前に、作業ノートだけ机に置きました。",detail:"後輩が見れば分かるように、赤ペンで丸をつけたつもりでした。",core:"でも最後のページ、途中で終わってるんです。",ask:"中途半端に残したことが、ずっと引っかかっています。",object:"作業ノート"}
+  {surface:"帰る前に、作業ノートだけ机に置きました。",detail:"後輩が見れば分かるように、赤ペンで丸をつけたつもりでした。",core:"でも最後のページ、途中で終わってるんです。",ask:"中途半端に残したことが、ずっと引っかかっています。",object:"作業ノート"},
+  {surface:"タイムカードを押した音だけ覚えています。",detail:"そのあとロッカーで、明日の予定表を見直しました。",core:"休むつもりなんてなかったから、机の上がそのままです。",ask:"私が抜けた穴って、誰かを困らせましたか。",object:"予定表"},
+  {surface:"最後のメール、下書きのままでした。",detail:"“お疲れさまです”だけ打って、本文が空欄です。",core:"いつも通り返すはずだったのに、そこで止まっています。",ask:"返事をしなかった人みたいで嫌なんです。",object:"下書きメール"}
  ],
  夢:[
   {surface:"最後に持っていたのは、出るはずだったライブの半券でした。",detail:"名前も小さく載る予定で、それだけでずっと嬉しかったんです。",core:"でも本番の前に、全部止まりました。",ask:"叶ってない夢を、まだ大事にしててもいいんでしょうか。",object:"チケット半券"},
-  {surface:"作品を出す直前でした。",detail:"最後の修正をして、朝に提出するつもりでした。",core:"見てもらえないまま終わったのが、まだ悔しいです。",ask:"未完成のままでも、好きだったって言っていいんですか。",object:"未完成の作品"}
+  {surface:"作品を出す直前でした。",detail:"最後の修正をして、朝に提出するつもりでした。",core:"見てもらえないまま終わったのが、まだ悔しいです。",ask:"未完成のままでも、好きだったって言っていいんですか。",object:"未完成の作品"},
+  {surface:"オーディション用の靴だけ、新品でした。",detail:"箱から出して、紐を結んで、ほどいて、また結びました。",core:"本番で履けなかったのに、足の形だけ残っています。",ask:"挑戦する前の気持ちも、夢って呼んでいいんですか。",object:"新品の靴"},
+  {surface:"ノートの一ページ目に、店の名前だけ書いてありました。",detail:"メニューも場所も決めてないのに、名前だけは決まってました。",core:"笑われそうで誰にも見せなかったけど、本気でした。",ask:"始まってないものでも、終わったって言えるんですか。",object:"店名を書いたノート"}
  ],
  孤独:[
   {surface:"駅前のベンチで、飴をひとつ持っていました。",detail:"誰かにあげようと思って買ったのに、結局ずっと握ってました。",core:"誰も来ないのは慣れてたはずなのに、その日はきつかったです。",ask:"誰かを待ってたって、言ってもいいんでしょうか。",object:"飴玉"},
-  {surface:"郵便受けに、ずっとチラシが溜まっていました。",detail:"片づけようとは思ってたんです。でも誰にも気づかれない気がして。",core:"いなくなっても、しばらく誰も気づかないかもしれない。それが怖かった。",ask:"私、ちゃんとここにいたんでしょうか。",object:"郵便受けの鍵"}
+  {surface:"郵便受けに、ずっとチラシが溜まっていました。",detail:"片づけようとは思ってたんです。でも誰にも気づかれない気がして。",core:"いなくなっても、しばらく誰も気づかないかもしれない。それが怖かった。",ask:"私、ちゃんとここにいたんでしょうか。",object:"郵便受けの鍵"},
+  {surface:"最後に開いた画面は、天気予報でした。",detail:"誰かに送る予定もないのに、明日の雨だけ確認していました。",core:"明日を気にしてた自分が、少し寂しいです。",ask:"ひとりでも、明日を待ってたって言えますか。",object:"天気予報の画面"},
+  {surface:"冷蔵庫にプリンが一個だけ残っていました。",detail:"名前を書くほどでもないし、誰に取られるわけでもないのに。",core:"それでも“あとで食べよう”と思っていました。",ask:"そういう小さい予定って、誰にも話せないまま残るんですね。",object:"プリン"}
  ],
  怒り:[
   {surface:"最後の日、あいつ普通に笑ってたんすよ。",detail:"こっちはずっと我慢して、領収書まで握りつぶしてたのに。",core:"許したみたいな顔をした自分にも腹が立ちます。",ask:"これ、怒っててもよかったやつですよね。",object:"破れた領収書"},
-  {surface:"謝られた時、なぜか余計に腹が立ちました。",detail:"“悪かった”って言われて、そこで終わりにされた感じがして。",core:"許したことにされたのが、ずっと嫌です。",ask:"きれいに終わらせないとダメですか。",object:"濡れたスマホ"}
+  {surface:"謝られた時、なぜか余計に腹が立ちました。",detail:"“悪かった”って言われて、そこで終わりにされた感じがして。",core:"許したことにされたのが、ずっと嫌です。",ask:"きれいに終わらせないとダメですか。",object:"濡れたスマホ"},
+  {surface:"最後まで、私が大人な対応をしたことになっています。",detail:"本当は机を蹴りたいくらい腹が立ってました。",core:"我慢した方だけが、物分かりいい人にされるのが嫌です。",ask:"怒ったまま行くのは、だめですか。",object:"折れたペン"},
+  {surface:"“ありがとう”って言われたのが、いちばん嫌でした。",detail:"便利に使っておいて、最後だけきれいにするなよって思いました。",core:"感謝されたら許したことになる気がして。",ask:"嫌だったって、最後まで言ってもいいですか。",object:"くしゃくしゃのメモ"}
  ],
  思い出:[
   {surface:"最後に思い出したの、すごいどうでもいい日なんです。",detail:"コンビニの前で、友達と安いアイスを食べてました。",core:"大事な場面じゃないのに、そこだけ明るく残ってるんです。",ask:"そんな日を大事にしててもいいんですかね。",object:"アイスの棒"},
-  {surface:"小さい缶バッジを、最後まで捨てられませんでした。",detail:"もう好きじゃないふりをしてたけど、本当はずっと好きでした。",core:"くだらないって言われたものほど、残っています。",ask:"こういうの、笑ってもらえたら楽なんですけど。",object:"缶バッジ"}
+  {surface:"小さい缶バッジを、最後まで捨てられませんでした。",detail:"もう好きじゃないふりをしてたけど、本当はずっと好きでした。",core:"くだらないって言われたものほど、残っています。",ask:"こういうの、笑ってもらえたら楽なんですけど。",object:"缶バッジ"},
+  {surface:"古いゲームのセーブ音を、なぜか思い出しました。",detail:"もう何年も起動してないのに、あの短い音だけはっきりしてます。",core:"人生の大事な場面じゃなくて、そこなのかって自分でも思います。",ask:"でも、好きだったんです。そう言ってもいいですか。",object:"ゲームソフト"},
+  {surface:"夕方の洗剤の匂いだけ、ずっと残っています。",detail:"部屋干しの服が揺れていて、窓の外がオレンジでした。",core:"何も起きてない日の方が、戻りたくなります。",ask:"普通の日が恋しいって、変ですか。",object:"洗濯ばさみ"}
  ],
  約束:[
   {surface:"約束の時間に、駅へ向かっていました。",detail:"腕時計は止まってたのに、何回も見てました。",core:"間に合わなかったことより、待たせたかもしれないのが残っています。",ask:"もう終わりにしていい約束って、ありますか。",object:"止まった腕時計"},
-  {surface:"返事を書くって約束していました。",detail:"手紙はカバンに入っていて、封筒だけ少し折れてました。",core:"返さなかった言葉が、まだ口の中にある感じがします。",ask:"言えなかった返事を、ここで閉じてもいいんでしょうか。",object:"古い手紙"}
+  {surface:"返事を書くって約束していました。",detail:"手紙はカバンに入っていて、封筒だけ少し折れてました。",core:"返さなかった言葉が、まだ口の中にある感じがします。",ask:"言えなかった返事を、ここで閉じてもいいんでしょうか。",object:"古い手紙"},
+  {surface:"“また明日”って言ったのが最後でした。",detail:"軽く言っただけで、約束のつもりじゃなかったんです。",core:"でも相手には、明日が残ったのかもしれません。",ask:"軽い言葉でも、置いていったことになりますか。",object:"改札の切符"},
+  {surface:"写真を送るって言っていました。",detail:"選んでいる途中で、どれも変に見えてやめました。",core:"送らなかった一枚が、ずっと残っています。",ask:"見せられなかったものも、約束に入りますか。",object:"未送信の写真"}
  ],
  罪悪感:[
   {surface:"最後に言ったのが、たぶん嫌な言い方でした。",detail:"“もう知らん”って言って、玄関を出ました。",core:"謝る相手がいるのに、もう戻れないんです。",ask:"優しくされると、逃げたみたいで苦しいです。",object:"折れた鍵"},
-  {surface:"本当は入るべき部屋に、入れませんでした。",detail:"ドアの前でハンカチを握って、ずっと立ってました。",core:"逃げたのは私です。それは分かっています。",ask:"そこを、なかったことにしないでほしいです。",object:"白いハンカチ"}
+  {surface:"本当は入るべき部屋に、入れませんでした。",detail:"ドアの前でハンカチを握って、ずっと立ってました。",core:"逃げたのは私です。それは分かっています。",ask:"そこを、なかったことにしないでほしいです。",object:"白いハンカチ"},
+  {surface:"助けてって言われた気がしました。",detail:"でも、聞き間違いだと思うことにしました。",core:"そうした方が楽だったからです。",ask:"私は、ちゃんと責められた方が楽なのかもしれません。",object:"閉じた扉"},
+  {surface:"謝るタイミングを選んでいました。",detail:"落ち着いてから、ちゃんと話そうと思って。",core:"落ち着いた時なんて、来ませんでした。",ask:"先延ばしにしたことを、許してほしいわけじゃないです。",object:"握ったハンカチ"}
  ],
  継承:[
   {surface:"ノートの最後のページだけ、途中で止まっています。",detail:"続きを書けば誰かが使えると思ってたのに、そこまでいけませんでした。",core:"自分で終わらせられなかったことが、悔しいです。",ask:"途中でも、誰かに渡していいんでしょうか。",object:"書きかけのノート"},
-  {surface:"植えるはずだった種が、袋のまま残っています。",detail:"春になったら一緒に植えようって、言ってました。",core:"約束より、続きを渡せなかったことが怖いです。",ask:"私がいなくても、咲いていいんでしょうか。",object:"種の袋"}
+  {surface:"植えるはずだった種が、袋のまま残っています。",detail:"春になったら一緒に植えようって、言ってました。",core:"約束より、続きを渡せなかったことが怖いです。",ask:"私がいなくても、咲いていいんでしょうか。",object:"種の袋"},
+  {surface:"レシピの分量だけ、まだ直していません。",detail:"砂糖を少し減らすつもりで、横に小さく印をつけました。",core:"あの味を、誰かが覚えてくれるならいいのに。",ask:"私が作らなくても、続いていいんですか。",object:"古いレシピ"},
+  {surface:"鍵の場所を、私しか知りませんでした。",detail:"言えばよかったのに、いつでも言えると思ってました。",core:"秘密にしたかったわけじゃないんです。",ask:"残したものを、誰かに見つけてもらうのは勝手ですか。",object:"小さな鍵"}
  ],
  雑談:[
   {surface:"本題の前に、どうでもいい話していいですか。",detail:"最後に飲んだコーヒー、ちょっと薄かったんです。",core:"それを誰かに言いたかっただけかもしれません。",ask:"面談なのに、こんな話でもいいんですかね。",object:"レシート"},
-  {surface:"最後の日、傘が変な方向に曲がってました。",detail:"直そうとして、なんか笑えてきたんです。",core:"怖かったはずなのに、そういう変なことだけ残ってます。",ask:"しんみりしないで話しても、怒られませんか。",object:"曲がった傘"}
+  {surface:"最後の日、傘が変な方向に曲がってました。",detail:"直そうとして、なんか笑えてきたんです。",core:"怖かったはずなのに、そういう変なことだけ残ってます。",ask:"しんみりしないで話しても、怒られませんか。",object:"曲がった傘"},
+  {surface:"自販機で押したボタン、間違えました。",detail:"温かいお茶のつもりが、冷たいコーヒーが出てきて。",core:"それで一人で笑ったのを、最後に覚えています。",ask:"そういう話で終わっても、いいんでしょうか。",object:"冷たいコーヒー"},
+  {surface:"靴下が片方だけずれてたんです。",detail:"誰にも見られてないのに、ずっと気になってました。",core:"死ぬ前の記憶がそれって、ちょっとひどくないですか。",ask:"笑ってくれたら、楽になります。",object:"片方だけずれた靴下"}
  ]
 };
+
 
 var modeReplies={
  chat:{finish:"最後に普通の話ができて、やっと帰れます。",react:"面談って、もっと怖いものかと思ってました。",fail:"最後まで面談っぽくしなくてよかったんです。普通に、どうでもいい話をしたかっただけで。"},
@@ -263,22 +304,51 @@ var responseInfo={
 };
 
 var choicesBase=[
- {text:"その話、最後まで聞きます。",tag:"listen",role:"pull",responseType:"accept",tone:"soft",pressure:0,specificity:1},
- {text:"それ、悔しかったですよね。",tag:"listen",role:"pull",responseType:"reflect",tone:"soft",pressure:1,specificity:1},
- {text:"そこまでしたことは、ちゃんと残っています。",tag:"care",role:"pull",responseType:"support",tone:"warm",pressure:0,specificity:2},
- {text:"何が引っかかっているか、分けましょう。",tag:"logic",role:"pull",responseType:"clarify",tone:"calm",pressure:2,specificity:2},
- {text:"原因を一つずつ見てもいいですか。",tag:"logic",role:"pull",responseType:"clarify",tone:"calm",pressure:2,specificity:3},
- {text:"ここで区切っても大丈夫です。",tag:"closure",role:"pull",responseType:"support",tone:"firm",pressure:1,specificity:3},
- {text:"小さい思い出ほど、残っていいんです。",tag:"memory",role:"pull",responseType:"reflect",tone:"soft",pressure:0,specificity:3},
- {text:"その続きは、誰かに渡してもいいんです。",tag:"inherit",role:"pull",responseType:"support",tone:"firm",pressure:1,specificity:3},
- {text:"叶わなかった時間も、失敗だけじゃないです。",tag:"hope",role:"pull",responseType:"support",tone:"warm",pressure:0,specificity:2},
- {text:"少しだけ、関係ない話をしましょうか。",tag:"chat",role:"pull",responseType:"joke",tone:"light",pressure:0,specificity:3},
+ {text:"急がなくていいです。言えるところからで大丈夫です。",tag:"listen",role:"pull",responseType:"accept",tone:"soft",pressure:0,specificity:2},
+ {text:"今は答えを出さなくていいです。ここに置いていってください。",tag:"listen",role:"pull",responseType:"silence",tone:"quiet",pressure:0,specificity:3},
+ {text:"言えなかった分も、ここでは急かしません。",tag:"listen",role:"pull",responseType:"reflect",tone:"soft",pressure:0,specificity:3},
+ {text:"そのままの言葉で大丈夫です。きれいにしなくていいです。",tag:"listen",role:"pull",responseType:"accept",tone:"soft",pressure:0,specificity:2},
+ {text:"何が起きたのか、一つずつ分けて見ましょう。",tag:"logic",role:"pull",responseType:"clarify",tone:"calm",pressure:2,specificity:3},
+ {text:"まず、あなたの責任だった部分と、そうでない部分を分けたいです。",tag:"logic",role:"pull",responseType:"clarify",tone:"calm",pressure:2,specificity:3},
+ {text:"慰める前に、事実を順番に見てもいいですか。",tag:"logic",role:"pull",responseType:"clarify",tone:"calm",pressure:2,specificity:3},
+ {text:"引っかかっている一点を、一緒に確認しましょう。",tag:"logic",role:"pull",responseType:"question",tone:"calm",pressure:2,specificity:2},
+ {text:"頑張れじゃなくて、頑張ってたねって言いたいです。",tag:"care",role:"pull",responseType:"support",tone:"warm",pressure:0,specificity:3},
+ {text:"ちゃんと誰かのために動いていたことは、残っています。",tag:"care",role:"pull",responseType:"support",tone:"warm",pressure:0,specificity:3},
+ {text:"あなたが気にかけていたこと、軽く見ません。",tag:"care",role:"pull",responseType:"accept",tone:"soft",pressure:0,specificity:2},
+ {text:"見ていた人がいなくても、してきたことは消えません。",tag:"care",role:"pull",responseType:"support",tone:"warm",pressure:0,specificity:3},
+ {text:"そういうどうでもいい日が、大事だったんですね。",tag:"memory",role:"pull",responseType:"reflect",tone:"soft",pressure:0,specificity:3},
+ {text:"くだらないまま、大事にしていいと思います。",tag:"memory",role:"pull",responseType:"accept",tone:"soft",pressure:0,specificity:3},
+ {text:"大きな意味にしなくても、その記憶は持っていていいです。",tag:"memory",role:"pull",responseType:"support",tone:"warm",pressure:0,specificity:3},
+ {text:"笑って話してもいい記憶なんだと思います。",tag:"memory",role:"pull",responseType:"joke",tone:"light",pressure:0,specificity:2},
  {text:"怒っていい話です。きれいにしなくていい。",tag:"anger",role:"pull",responseType:"accept",tone:"direct",pressure:1,specificity:3},
- {text:"逃げたことまで、なかったことにしなくていいです。",tag:"scold",role:"pull",responseType:"scold",tone:"firm",pressure:2,specificity:3},
+ {text:"許したことにしなくていいです。嫌だったって言っていい。",tag:"anger",role:"pull",responseType:"reflect",tone:"direct",pressure:1,specificity:3},
+ {text:"落ち着かなくてもいいです。その腹立ち方には理由があります。",tag:"anger",role:"pull",responseType:"accept",tone:"direct",pressure:1,specificity:3},
+ {text:"大人な対応にしなくていいです。嫌だったものは嫌です。",tag:"anger",role:"pull",responseType:"scold",tone:"firm",pressure:2,specificity:3},
+ {text:"ここで閉じても大丈夫です。続きを背負い続けなくていい。",tag:"closure",role:"pull",responseType:"support",tone:"firm",pressure:1,specificity:3},
+ {text:"終わらせることは、なかったことにするのとは違います。",tag:"closure",role:"pull",responseType:"clarify",tone:"calm",pressure:1,specificity:3},
+ {text:"その約束は、ここで置いていっていいと思います。",tag:"closure",role:"pull",responseType:"support",tone:"firm",pressure:1,specificity:3},
+ {text:"もう返せない言葉を、ここで閉じましょう。",tag:"closure",role:"pull",responseType:"clarify",tone:"firm",pressure:2,specificity:3},
+ {text:"途中でも、誰かに渡していいんです。",tag:"inherit",role:"pull",responseType:"support",tone:"firm",pressure:1,specificity:3},
+ {text:"あなたが終わらせなくても、続いていいものがあります。",tag:"inherit",role:"pull",responseType:"support",tone:"warm",pressure:1,specificity:3},
+ {text:"残したものは、失敗じゃなくて引き継ぎかもしれません。",tag:"inherit",role:"pull",responseType:"clarify",tone:"calm",pressure:1,specificity:3},
+ {text:"全部やりきれなくても、渡したかった気持ちは残ります。",tag:"inherit",role:"pull",responseType:"reflect",tone:"soft",pressure:0,specificity:3},
+ {text:"叶わなかった未来も、好きだった証拠にはなります。",tag:"hope",role:"pull",responseType:"support",tone:"warm",pressure:0,specificity:3},
+ {text:"始まらなかったものを、大事だったって言っていいです。",tag:"hope",role:"pull",responseType:"accept",tone:"soft",pressure:0,specificity:3},
+ {text:"閉じなかった未来を、少しだけここで見てもいいです。",tag:"hope",role:"pull",responseType:"reflect",tone:"soft",pressure:0,specificity:3},
+ {text:"挑戦する前の気持ちも、ちゃんと夢だったと思います。",tag:"hope",role:"pull",responseType:"support",tone:"warm",pressure:0,specificity:3},
+ {text:"じゃあ、少しだけどうでもいい話をしましょう。",tag:"chat",role:"pull",responseType:"joke",tone:"light",pressure:0,specificity:3},
+ {text:"面談っぽくしなくていいです。普通に話しましょう。",tag:"chat",role:"pull",responseType:"joke",tone:"light",pressure:0,specificity:3},
+ {text:"その話、ちょっと笑って聞いてもいいですか。",tag:"chat",role:"pull",responseType:"joke",tone:"light",pressure:0,specificity:2},
+ {text:"怖い話じゃなくて、変な話として聞きます。",tag:"chat",role:"pull",responseType:"joke",tone:"light",pressure:0,specificity:3},
+ {text:"逃げたところも、なかったことにはしません。",tag:"scold",role:"pull",responseType:"scold",tone:"firm",pressure:2,specificity:3},
+ {text:"優しく流すより、そこはちゃんと見ます。",tag:"scold",role:"pull",responseType:"scold",tone:"firm",pressure:2,specificity:3},
+ {text:"責めたいんじゃなくて、見落としたくないんです。",tag:"scold",role:"pull",responseType:"clarify",tone:"firm",pressure:2,specificity:3},
+ {text:"苦しくても、そこを避けたままにはしません。",tag:"scold",role:"pull",responseType:"scold",tone:"firm",pressure:2,specificity:3},
  {text:"続きから聞かせてください。",tag:"watch",role:"watch",responseType:"accept",tone:"soft",pressure:0,specificity:0},
  {text:"少し黙って待ちます。急がなくていいです。",tag:"watch",role:"watch",responseType:"silence",tone:"quiet",pressure:0,specificity:1},
- {text:"誰に一番聞いてほしかったですか。",tag:"question",role:"watch",responseType:"question",tone:"calm",pressure:3,specificity:2},
- {text:"まず何をすればよかったんですかね。",tag:"bad",role:"distrust",responseType:"advice",tone:"practical",pressure:1,specificity:1},
+ {text:"その時、何を一番覚えていますか。",tag:"question",role:"watch",responseType:"question",tone:"calm",pressure:2,specificity:1},
+ {text:"今の話、もう少しだけ近くで聞いてもいいですか。",tag:"question",role:"watch",responseType:"question",tone:"calm",pressure:2,specificity:1},
+ {text:"まず何をすればよかったんですかね。",tag:"bad",role:"distrust",responseType:"advice",tone:"practical",pressure:1,specificity:0},
  {text:"前向きに考えた方がいいです。",tag:"bad",role:"distrust",responseType:"advice",tone:"light",pressure:0,specificity:0},
  {text:"時間が解決してくれると思います。",tag:"bad",role:"distrust",responseType:"advice",tone:"light",pressure:0,specificity:0},
  {text:"誰にでもあることだと思います。",tag:"bad",role:"distrust",responseType:"support",tone:"shallow",pressure:0,specificity:0},
@@ -287,6 +357,7 @@ var choicesBase=[
  {text:"誰も覚えていないと思います。",tag:"trap",role:"trap",responseType:"advice",tone:"cold",pressure:1,specificity:0},
  {text:"意味を探しても無駄です。",tag:"trap",role:"trap",responseType:"clarify",tone:"cold",pressure:2,specificity:0}
 ];
+
 
 var state={phase:"title",i:0,score:0,fails:0,resumeTime:20,answerTime:30,current:null,hp:0,trust:0,maxHp:0,maxTrust:0,timer:null,paused:false,compat:{},used:{},recent:[],stage:"surface",turns:0,responseCounts:{},failReasons:[],responseHistory:[],softMismatch:0};
 
@@ -338,7 +409,7 @@ function pressureToleranceFor(type,b,want){
 }
 function patienceFor(type,b){var p=2;if(type==="ISFJ"||type==="ESFJ"||b.A>70)p+=1;if(type==="ESTP"||type==="ENTP"||b.A<35)p-=1;if(b.N<35)p-=1;return clamp(p,1,4)}
 function memoFrom(g,b,profile){
- var memo="";
+ var memo=(g.voice&&g.voice.memo?g.voice.memo+" ":"");
  if(b.N<38)memo+="軽い励ましには傷つきやすい。";
  else if(b.A>70)memo+="相手の反応を先に気にする。";
  else if(b.O>70)memo+="話が少し飛びやすい。";
@@ -356,16 +427,25 @@ function memoFrom(g,b,profile){
  return memo;
 }
 function buildOpening(g,profile){
- var c=g.caseDetail,line=c.surface+" "+c.detail,lead=profile.sample;
- if(g.speechProfile.talkAmount==="short")return lead+" "+c.surface;
- if(g.speechProfile.directness==="roundabout")return "えっと……変な話かもしれません。 "+line;
- if(g.speechProfile.humor)return lead+" "+c.surface;
- if(g.speechProfile.directness==="direct")return lead+" "+line;
- return line+" "+lead;
+ var c=g.caseDetail,line=joinClean([c.surface,c.detail]),lead=(g.voice&&g.voice.opener)||profile.sample;
+ if(g.voice){
+  if(g.voice.style==="short")return joinClean([lead,c.surface]);
+  if(g.voice.style==="roundabout")return joinClean([lead,line]);
+  if(g.voice.style==="bright"||g.voice.style==="irony")return joinClean([lead,c.surface]);
+  if(g.voice.style==="formal"||g.voice.style==="dry"||g.voice.style==="direct")return joinClean([lead,line]);
+  if(g.voice.style==="sensory")return joinClean([lead,c.detail,c.surface]);
+ }
+ if(g.speechProfile.talkAmount==="short")return joinClean([lead,c.surface]);
+ if(g.speechProfile.directness==="roundabout")return joinClean(["えっと……変な話かもしれません。",line]);
+ if(g.speechProfile.humor)return joinClean([lead,c.surface]);
+ if(g.speechProfile.directness==="direct")return joinClean([lead,line]);
+ return joinClean([line,lead]);
 }
 function makeGhost(n){
- var regret=regrets[n%regrets.length],genderRoll=n%20,gender=genderRoll<9?"女性":(genderRoll<18?"男性":"不明"),type=typeTags[n%typeTags.length],profile=typeProfiles[type],age=16+((n*13)%73),b=buildBig5(n,type,gender,age),want=chooseWant(profile,regret,b,n,age),name=pickName(gender,n),caseList=cases[regret.name]||[],caseDetail=caseList[n%caseList.length];
- var g={id:n+1,name:name,gender:gender,age:age,type:type,big5:b,cause:causes[(n*5)%causes.length],regretName:regret.name,item:regret.item,face:faces[(n*11)%faces.length],maxHp:4+(n%3),maxTrust:4+(n%2),want:want,prefer:profile.prefer,seed:hash(name+type+n),caseDetail:caseDetail};
+ var regret=regrets[n%regrets.length],genderRoll=n%20,gender=genderRoll<9?"女性":(genderRoll<18?"男性":"不明"),type=typeTags[n%typeTags.length],profile=typeProfiles[type],voice=voicePacks[(n*7+Math.floor(n/10))%voicePacks.length],age=16+((n*13)%73),b=buildBig5(n,type,gender,age),want=chooseWant(profile,regret,b,n,age);
+ if(n%3===1)want=voice.want;
+ var name=pickName(gender,n),caseList=cases[regret.name]||[],caseDetail=caseList[(n+Math.floor(n/10))%caseList.length];
+ var g={id:n+1,name:name,gender:gender,age:age,type:type,voice:voice,big5:b,cause:causes[(n*5)%causes.length],regretName:regret.name,item:caseDetail.object||regret.item,face:faces[(n*11)%faces.length],maxHp:4+(n%3),maxTrust:4+(n%2),want:want,prefer:profile.prefer,seed:hash(name+type+voice.id+n),caseDetail:caseDetail};
  g.hiddenNeed=hiddenNeedFor(want);g.pressureTolerance=pressureToleranceFor(type,b,want);g.patience=patienceFor(type,b);g.speechProfile=speechProfileFrom(type,b,want);g.memo=memoFrom(g,b,profile);g.opening=buildOpening(g,profile);return g;
 }
 function buildGhosts(){var arr=[];for(var i=0;i<CONFIG.ghostCount;i++)arr.push(makeGhost(i));return arr}
@@ -379,7 +459,7 @@ function loadGhost(){
  renderResume();show("resume");updateHeader();
 }
 function renderResume(){
- var g=state.current;els.rName.textContent=g.name+"（"+g.type+"風）";els.rGender.textContent=g.gender;els.rAge.textContent=g.age+"歳";els.rCause.textContent=g.cause;els.rRegret.textContent=g.regretName;els.rItem.textContent=g.item;els.rMemo.textContent=g.memo;
+ var g=state.current;els.rName.textContent=g.name+"（"+(g.voice?g.voice.label:g.type+"風")+"）";els.rGender.textContent=g.gender;els.rAge.textContent=g.age+"歳";els.rCause.textContent=g.cause;els.rRegret.textContent=g.regretName;els.rItem.textContent=g.item;els.rMemo.textContent=g.memo;
 }
 function begin(){
  if(state.phase!=="resume")return;
@@ -398,6 +478,7 @@ function scoreChoice(c){
  if(g.speechProfile.directness==="direct"&&c.tone==="firm")score+=1;
  if(g.speechProfile.directness==="roundabout"&&c.responseType==="clarify")score-=1;
  if((c.pressure||0)>g.pressureTolerance)score-=2;
+    if(g.voice){if(g.voice.style==="bright"&&c.responseType==="joke")score+=2;if(g.voice.style==="formal"&&c.responseType==="clarify")score+=1.5;if(g.voice.style==="rough"&&c.tag==="anger")score+=2;if(g.voice.style==="sensory"&&c.tag==="memory")score+=2;if(g.voice.style==="short"&&c.responseType==="question")score-=1.5;}
  var recentSame=0;for(var i=state.responseHistory.length-1;i>=0&&i>=state.responseHistory.length-3;i--){if(state.responseHistory[i]===c.responseType)recentSame++}
  if(recentSame>=1)score-=1.2;if(recentSame>=2)score-=2.2;
  return score;
@@ -407,7 +488,7 @@ function renderGame(){
  if(state.score<5)els.hp.textContent="成仏HP "+state.hp+"/"+state.maxHp+" / 不信HP "+state.trust+"/"+state.maxTrust+" / "+state.stage;
  else if(state.score<10){var light=state.hp<=1?"かなり軽くなっている":(state.hp<state.maxHp?"少し軽くなっている":"まだ重そう"),trustTxt=state.trust<=1?"かなり警戒している":(state.trust<state.maxTrust?"少し警戒している":"話してくれている");els.hp.textContent=light+" / "+trustTxt}
  else els.hp.textContent="面談中：表情と返事から読んでください";
- els.round.textContent="失敗 "+state.fails+"/3";els.choices.innerHTML="";
+ els.round.textContent=(state.i+1)+"/150";els.choices.innerHTML="";
  var pool=choicesBase.filter(function(c){return !state.used[c.text]}).map(function(c){var x=Object.assign({},c);x._score=scoreChoice(x);return x});
  if(pool.length<4){state.used={};pool=choicesBase.map(function(c){var x=Object.assign({},c);x._score=scoreChoice(x);return x})}
  pool.sort(function(a,b){return b._score-a._score});
@@ -482,7 +563,7 @@ function failHint(c,kind){
  base+=" 本当は、"+g.hiddenNeed+"だけでした。";state.failReasons.push(base);return base;
 }
 function ascend(){
- var g=state.current;state.score++;state.i++;state.compat[g.type]=(state.compat[g.type]||0)+1;
+ var g=state.current;state.score++;state.i++;state.compat[(g.voice?g.voice.label:g.type)]=(state.compat[(g.voice?g.voice.label:g.type)]||0)+1;
  var reply=modeReplies[g.want].finish+" "+g.caseDetail.object+"のことも、もう置いていけそうです。";
  if(g.speechProfile.talkAmount==="short")reply="……はい。"+reply;
  els.speech.textContent=reply;els.choices.innerHTML="";toast("成仏しました");state.phase="transition";setTimeout(loadGhost,950);
@@ -507,7 +588,7 @@ function tick(){
 els.startBtn.onclick=start;els.skipBtn.onclick=begin;els.restartBtn.onclick=start;
 els.pauseBtn.onclick=function(){if(state.phase==="title"||state.phase==="result")return;state.paused=true;els.pauseOverlay.classList.remove("hidden")};
 els.resumeBtn.onclick=function(){state.paused=false;els.pauseOverlay.classList.add("hidden")};
-els.debug.textContent="JS起動済み。v25";updateHeader();
+els.debug.textContent="JS起動済み。v26";updateHeader();
 })();
 </script>
 </body>
